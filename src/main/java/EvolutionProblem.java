@@ -5,30 +5,36 @@ public class EvolutionProblem {
     private static char[] genes = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ".toCharArray();
     private static String solution;
     private static int optimalFitness;
-    private static HashMap<String, Integer> population;
+    private static int initialPopulation = 10;
+    private static TreeMap<String, Integer> population;
     private static float mutationRate = 0.05F;
     private static float crossoverRate = 0.5F;
+    private static float rateEliteSelected = 0.05F;
+    private static float rateLuckySelected = 0.01F;
 
 
 
     public static void main(String[] args) {
         if (args.length < 1) {
             args = new String[1];
-            args[0] = "Hello world";
+            args[0] = "Hello world"; //default "password"
         }
         run(args[0]);
     }
 
     private static void run(String arg) {
+        for (int i = 0; i < arg.length(); i++) {
+            if (!isGene(arg.charAt(i)))
+                System.out.println("Target solution contains symbols which are not genes of current GA!");
+        }
         solution = arg;
         optimalFitness = solution.length(); //require to guess the whole word
         // start GA
-        int initialPopulation = 10;
         for (int i = 0; i < initialPopulation; i++) {
             String chromosome = randomGeneSet();
             population.put(chromosome, fitness(chromosome));
         }
-        System.out.println("Created " + initialPopulation + "pseudorandom chromosomes as starting population.");
+        System.out.println("Created " + initialPopulation + " pseudorandom chromosomes as starting population.");
         population.forEach((chr, fit) -> System.out.println("Chromosome " + chr + " with fitness " + fit));
         int maxEpochs = 500;
         int ep = 1;
@@ -41,8 +47,36 @@ public class EvolutionProblem {
         System.out.println("Couldn't reach answer in " + maxEpochs + " epochs!");
     }
 
-    private static void crossover(HashMap<String, Integer> population) {
-        HashMap<String, Integer> kids = new HashMap<>();
+    private static boolean isGene(char c) {
+        for (int i = 0; i < genes.length; i++) {
+            if (genes[i] == c) return true;
+        }
+        return false;
+    }
+
+    private static TreeMap<String, Integer> select(TreeMap<String, Integer> population) {
+        // elitarism
+        Map<String, Integer> remaining = new TreeMap<>();
+
+        return null;
+    }
+
+    static <K,V extends Comparable<? super V>>
+    SortedSet<Map.Entry<K,V>> entriesSortedByValues(Map<K,V> map) {
+        SortedSet<Map.Entry<K,V>> sortedEntries = new TreeSet<Map.Entry<K,V>>(
+                new Comparator<Map.Entry<K,V>>() {
+                    @Override public int compare(Map.Entry<K,V> e1, Map.Entry<K,V> e2) {
+                        int res = e1.getValue().compareTo(e2.getValue());
+                        return res != 0 ? res : 1;
+                    }
+                }
+        );
+        sortedEntries.addAll(map.entrySet());
+        return sortedEntries;
+    }
+
+    private static void crossover(TreeMap<String, Integer> population) {
+        TreeMap<String, Integer> kids = new TreeMap<>();
         for (int i = 0; i < ((int) (population.size() * crossoverRate * 0.5)); i++) {
             String c1 = selectRandomChr(population);
             String c2 = String.valueOf(c1);
@@ -67,14 +101,14 @@ public class EvolutionProblem {
         return g1 + g2;
     }
 
-    private static String selectRandomChr(HashMap<String, Integer> population) {
+    private static String selectRandomChr(TreeMap<String, Integer> population) {
         Random       random    = new Random();
         List<String> keys      = new ArrayList<String>(population.keySet());
         String       randomKey = keys.get( random.nextInt(keys.size()) );
         return randomKey;
     }
 
-    private static void mutate(HashMap<String, Integer> population) {
+    private static void mutate(TreeMap<String, Integer> population) {
         Random random = new Random();
         population.forEach((chr, val) -> {
             if (random.nextInt(100) // a 100% cointoss
