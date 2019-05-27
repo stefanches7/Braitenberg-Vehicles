@@ -1,7 +1,11 @@
 import java.util.*;
 
+/**
+ * Training example evolution problem.
+ */
 public class EvolutionProblem {
 
+    private static final Random r = new Random();
     private static char[] genes = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ ".toCharArray();
     private static String solution = "";
     private static int optimalFitness;
@@ -13,8 +17,6 @@ public class EvolutionProblem {
     private static float rateLuckySelected = 0.01F;
     private static long startTime = 0;
     private static long endTime = 0;
-    private static final Random r = new Random();
-
 
     public static void main(String[] args) {
         if (args.length < 1) {
@@ -24,6 +26,9 @@ public class EvolutionProblem {
         run(args[0]);
     }
 
+    /**
+     * Algo entry point
+     */
     private static void run(String arg) {
         for (int i = 0; i < arg.length(); i++) {
             if (!isGene(arg.charAt(i)))
@@ -53,7 +58,7 @@ public class EvolutionProblem {
                 System.out.println("Mutation rate: " + mutationRate);
                 System.out.println("Rate individuals mating: " + crossoverRate);
                 System.out.println("Elitarism: " + rateEliteSelected);
-                System.out.println("Running time (s): " + elapsedTime/1000.0);
+                System.out.println("Running time (s): " + elapsedTime / 1000.0);
                 System.exit(0);
             } else ep++;
 
@@ -63,7 +68,7 @@ public class EvolutionProblem {
     }
 
     private static boolean solutionAchieved(TreeMap<String, Integer> population) {
-        for (Map.Entry<String, Integer> individual: population.entrySet()) {
+        for (Map.Entry<String, Integer> individual : population.entrySet()) {
             if (individual.getValue() >= optimalFitness) return true;
         }
         return false;
@@ -76,6 +81,9 @@ public class EvolutionProblem {
         return false;
     }
 
+    /**
+     * Selection step of GA
+     */
     private static TreeMap<String, Integer> select(TreeMap<String, Integer> population) {
         TreeMap<String, Integer> remaining = new TreeMap<>();
         // elitarism
@@ -92,8 +100,8 @@ public class EvolutionProblem {
         return remaining;
     }
 
-    public static <K, V extends Comparable<V>> Map<K, V>
-    sortByValues(final Map<K, V> map) {
+    private static <K, V extends Comparable<V>> Map<K, V>
+    sortByValues(Map<K, V> map) {
         Comparator<K> valueComparator =
                 new Comparator<K>() {
                     public int compare(K k1, K k2) {
@@ -127,6 +135,9 @@ public class EvolutionProblem {
         population.putAll(kids);
     }
 
+    /**
+     * 1-Point crossover
+     */
     private static String mixGametes(String c1, String c2) {
         if (c1.length() != c2.length())
             throw new IllegalArgumentException("Crossing two not equally long chromosomes!");
@@ -137,11 +148,14 @@ public class EvolutionProblem {
     }
 
     private static String selectRandomChr(TreeMap<String, Integer> population) {
-        List<String> keys      = new ArrayList<String>(population.keySet());
-        String       randomKey = keys.get( r.nextInt(keys.size()) );
+        List<String> keys = new ArrayList<String>(population.keySet());
+        String randomKey = keys.get(r.nextInt(keys.size()));
         return randomKey;
     }
 
+    /**
+     * Random mutation.
+     */
     private static void mutate(TreeMap<String, Integer> population) {
         Map<String, Integer> mutated = new HashMap<>();
         List<String> original = new LinkedList<>();
@@ -156,7 +170,7 @@ public class EvolutionProblem {
                 mutated.put(mutatedChr, fitness(mutatedChr));
             }
         });
-        for (String chr: original) population.remove(chr);
+        for (String chr : original) population.remove(chr);
         population.putAll(mutated);
     }
 

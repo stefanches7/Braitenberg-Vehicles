@@ -38,6 +38,7 @@ class SimPresenter : Controller() {
                     WorldObject(
                         Random.nextDouble(worldWidth),
                         Random.nextDouble(worldHeight),
+                        Random.nextDouble(10.0),
                         Random.nextDouble(10.0)
                     )
                 )

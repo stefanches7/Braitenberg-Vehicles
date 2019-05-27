@@ -27,3 +27,21 @@ fun computeAngle(firstLineTwoDots: Array<Dot>, secondLineTwoDots: Array<Dot>, at
 }
 
 data class Dot(val x: Double, val y: Double)
+
+class Vector(val x: Double, val y: Double) {
+    operator fun plus(v: Vector): Vector {
+        return Vector(this.x + v.x, this.y + v.y)
+
+    }
+
+    operator fun plus(d: DoubleArray): Vector {
+        return Vector(this.x + d[0], this.y + d[1])
+    }
+
+    operator fun unaryMinus() = Vector(-x, -y)
+
+    operator fun times(v: Vector) = Vector(x * v.x, y * v.y)
+
+    operator fun times(c: Double) = Vector(c * x, c * y)
+    operator fun times(c: Int) = Vector(c * x, c * y)
+}
