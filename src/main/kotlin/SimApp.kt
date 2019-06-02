@@ -1,8 +1,8 @@
 import javafx.application.Application
 import tornadofx.*
-import view.WelcomeScreen
+import view.SimView
 
-class SimApp : App(WelcomeScreen::class, Styles::class)
+class SimApp : App(SimView::class, Styles::class)
 
 fun main(args: Array<String>) {
     Application.launch(SimApp::class.java, *args)

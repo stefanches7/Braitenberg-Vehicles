@@ -2,6 +2,7 @@ import javafx.beans.property.StringProperty
 import tornadofx.*
 
 class SimConfig {
+
     var name by property<String>()
     fun nameProperty() = getProperty(SimConfig::name)
 

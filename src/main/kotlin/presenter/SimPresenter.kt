@@ -15,9 +15,17 @@ class SimPresenter : Controller() {
     fun startSimulation(config: SimConfig) {
         // TODO fetch world layout from external source/own class
         val (worldWidth, worldHeight, vehiclesCount) = config.parse()
+        startSimulation(worldWidth, worldHeight, vehiclesCount)
+    }
+
+    fun startSimulation(
+        worldWidth: Double,
+        worldHeight: Double,
+        vehiclesCount: Double
+    ): List<MutableSet<out Any>> {
         for (i in 1..vehiclesCount.toInt()) {
-            val vehicleLength: Double = 40.0
-            val vehicleWidth: Double = 20.0
+            val vehicleLength = 40.0
+            val vehicleWidth = 20.0
             vehicles.add(
                 Vehicle.simpleVehicle(
                     Random.nextDouble(-worldWidth / 2, worldWidth / 2),
@@ -29,23 +37,17 @@ class SimPresenter : Controller() {
             )
 
         }
-
+        val startWorldObjects: MutableSet<WorldObject> = mutableSetOf()
+        for (i in 1..5) startWorldObjects.add(WorldObject.randomWorldObject(worldWidth, worldHeight))
         model = SimModel(
             SimWorld(
-                config.worldWidth?.toDoubleOrNull() ?: 1000.0,
-                config.worldLength?.toDoubleOrNull() ?: 1000.0,
-                mutableSetOf(
-                    WorldObject(
-                        Random.nextDouble(worldWidth),
-                        Random.nextDouble(worldHeight),
-                        Random.nextDouble(10.0),
-                        Random.nextDouble(10.0)
-                    )
-                )
+                worldWidth,
+                worldHeight,
+                startWorldObjects
             ),
             vehicles
         )
-
+        return (listOf(startWorldObjects, vehicles))
     }
 
 }

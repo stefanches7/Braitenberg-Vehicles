@@ -1,7 +1,12 @@
+import javafx.scene.Node
+import javafx.scene.layout.StackPane
 import javafx.scene.shape.Circle
 import javafx.scene.shape.Rectangle
+import javafx.scene.shape.Shape
+import tornadofx.*
 
 class Vehicle(val body: Body, val sensors: Array<Sensor>, val motors: Array<Motor>, var speed: Vector) {
+    val render = VehicleRender()
 
     fun updateVelocity(affectors: Collection<WorldObject>) {
         var velVec: Vector = this.speed
@@ -12,6 +17,23 @@ class Vehicle(val body: Body, val sensors: Array<Sensor>, val motors: Array<Moto
             }
         }
         this.speed = velVec
+    }
+
+    inner class VehicleRender : StackPane() {
+        val element: StackPane = stackpane {
+            body.shape
+            motors.forEach { it.shape }
+            sensors.forEach { it.shape }
+        }
+
+        fun update(velocity: Vector) {
+            val bodyparts: List<Node> = element.children.filter { it is Shape }
+            bodyparts.forEach {
+                it.layoutXProperty().animate(it.layoutX + velocity.x, 1.seconds)
+                it.layoutYProperty().animate(it.layoutY + velocity.y, 1.seconds)
+            }
+        }
+
     }
 
     companion object Factory {
