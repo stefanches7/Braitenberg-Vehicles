@@ -44,8 +44,7 @@ class SimView : View() {
                 find(SimView::class),
                 frameRate.toByte()
             )
-        } ui {
-        }
+        } ui { }
         fac(5)
     }
 

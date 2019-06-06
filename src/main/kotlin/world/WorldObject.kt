@@ -13,8 +13,10 @@ import kotlin.random.Random
 /**
  * effectStrength is relative to the vehicle's attraction
  */
-class WorldObject(val x: Double, val y: Double, val size: Double, val effectStrength: Double) {
+class WorldObject(
+    val x: Double, val y: Double, val size: Double, val effectStrength: Double,
     val shape: Shape = Circle(x, y, size)
+) {
 
     /**
      * Newton's law. Returns (x, y) acceleration (mass is assumed to be 1 => a=F)

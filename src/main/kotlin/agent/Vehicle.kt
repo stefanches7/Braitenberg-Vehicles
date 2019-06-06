@@ -65,7 +65,7 @@ class Vehicle(
         }
 
         fun center(): Dot {
-            return center(body.shape.layoutBounds)
+            return center(body.shape.boundsInParent)
         }
 
         /**
@@ -76,14 +76,14 @@ class Vehicle(
             // rotate body
             out.add(KeyValue(body.shape.rotateProperty(), rotateAngle()))
             // move body
-            out.add(KeyValue(body.shape.layoutXProperty(), body.shape.layoutX + speed.x))
-            out.add(KeyValue(body.shape.layoutYProperty(), body.shape.layoutY + speed.y))
+            out.add(KeyValue(body.shape.layoutXProperty(), center().x + speed.x))
+            out.add(KeyValue(body.shape.layoutYProperty(), center().y + speed.y))
             // move parts of the body
             val pointRotation: DoubleVector = speed + (-oldSpeed)
             val put = { bp: BodyPart ->
                 val shiftX = sum(this.center().x, bp.centerOffset.x, pointRotation.x, speed.x)
                 val shiftY = sum(this.center().y, bp.centerOffset.y, pointRotation.y, speed.y)
-                out.add(KeyValue(bp.shape.layoutXProperty(), shiftX))
+                //out.add(KeyValue(bp.shape.centerXProperty(), shiftX))
                 out.add(KeyValue(bp.shape.layoutYProperty(), shiftY))
             }
             sensors.forEach {
@@ -123,21 +123,21 @@ class Vehicle(
             // Rectangle is default positioned with long side horisontally
             val bodyCenter = Dot(leftTopAngleX + longSide / 2, leftTopAngleX - shortSide / 2)
             val sensorRight = Sensor(
-                centerOffset = DoubleVector(longSide / 2, -sensorsDistance),
+                centerOffset = DoubleVector(longSide / 2, -sensorsDistance / 2),
                 bodyCenter = bodyCenter,
                 polarity = 1
             )
             val sensorLeft = Sensor(
-                centerOffset = DoubleVector(longSide / 2, sensorsDistance),
+                centerOffset = DoubleVector(longSide / 2, sensorsDistance / 2),
                 bodyCenter = bodyCenter,
                 polarity = -1
             )
             val motorRight = Motor(
-                centerOffset = DoubleVector(-longSide / 2, -sensorsDistance),
+                centerOffset = DoubleVector(-longSide / 2, -sensorsDistance / 2),
                 bodyCenter = bodyCenter
             )
             val motorLeft = Motor(
-                centerOffset = DoubleVector(-longSide / 2, sensorsDistance),
+                centerOffset = DoubleVector(-longSide / 2, sensorsDistance / 2),
                 bodyCenter = bodyCenter
             )
 
