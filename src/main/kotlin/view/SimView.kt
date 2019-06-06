@@ -61,7 +61,9 @@ class SimView : View() {
         vehicles.forEach {
             if (!registeredVehiclesRender.contains(it.render)) { //add new
                 with(canvas) {
-                    this += it.render.element
+                    it.render.list.forEach { bp ->
+                        this += bp
+                    }
                 }
                 registeredVehiclesRender.add(it.render)
             }

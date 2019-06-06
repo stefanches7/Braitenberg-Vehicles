@@ -2,10 +2,9 @@ package world
 
 import Dot
 import DoubleVector
-import computeAngle
+import angleToXAxis
 import javafx.scene.shape.Circle
 import javafx.scene.shape.Shape
-import kotlin.math.atan
 import kotlin.math.cos
 import kotlin.math.pow
 import kotlin.math.sin
@@ -23,9 +22,10 @@ class WorldObject(val x: Double, val y: Double, val size: Double, val effectStre
     fun effectOnDistance(toX: Double, toY: Double): DoubleVector {
         val G = 10
         val rSquare = (toX - this.x).pow(2) + (toY - this.y).pow(2)
-        val F = G * this.effectStrength / (rSquare)
-        val alpha =
-            computeAngle(arrayOf(Dot(x, y), Dot(toX, toY)), arrayOf(Dot(toX, toY), Dot(toX + 1, toY)), ::atan)
+        val F = G * this.effectStrength * 1000 / (rSquare)
+        val alpha = angleToXAxis(
+            arrayOf(Dot(x, y), Dot(toX, toY))
+        )
         return DoubleVector(F * cos(alpha), F * sin(alpha))
     }
 
@@ -35,7 +35,7 @@ class WorldObject(val x: Double, val y: Double, val size: Double, val effectStre
                 Random.nextDouble(worldWidth),
                 Random.nextDouble(worldHeight),
                 10.0,
-                Random.nextDouble(1.0, 10.0)
+                Random.nextDouble(100.0, 1000.0)
             )
         }
     }

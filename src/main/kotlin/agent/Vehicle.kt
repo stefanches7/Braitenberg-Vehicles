@@ -1,36 +1,42 @@
 package agent
 
+import Dot
 import DoubleVector
 import check
-import javafx.scene.Group
 import javafx.scene.layout.StackPane
 import javafx.scene.paint.Color
 import javafx.scene.shape.Circle
 import javafx.scene.shape.Rectangle
-import tornadofx.*
+import javafx.scene.shape.Shape
 import world.WorldObject
 
 class Vehicle(val body: Body, val sensors: Array<Sensor>, val motors: Array<Motor>, var speed: DoubleVector) {
     val render = VehicleRender(body, sensors, motors)
 
+    /**
+     * Changes velocity of current vehicle, based on sensors affected by objects in the world.
+     */
     fun updateVelocity(affectors: Collection<WorldObject>) {
         var velVec: DoubleVector = this.speed
         affectors.forEach {
             val wo = it
             sensors.forEach { ite ->
-                velVec += wo.effectOnDistance(ite.shape.layoutX, ite.shape.layoutY) * ite.polarity
+                val shape = (ite.shape as Circle) //dirty
+                velVec += wo.effectOnDistance(
+                    shape.centerX, shape.centerY
+                ) * ite.polarity
             }
         }
         this.speed = velVec
     }
 
     inner class VehicleRender(body: Body, sensors: Array<Sensor>, motors: Array<Motor>) : StackPane() {
-        val element: Group = group()
+        val list: MutableList<Shape> = mutableListOf()
 
         init {
-            element += body.shape
-            motors.forEach { element += it.shape }
-            sensors.forEach { element += it.shape }
+            list.add(body.shape)
+            motors.forEach { list.add(it.shape) }
+            sensors.forEach { list.add(it.shape) }
         }
 
     }
@@ -54,33 +60,23 @@ class Vehicle(val body: Body, val sensors: Array<Sensor>, val motors: Array<Moto
             }
             val body =
                 Body(
-                    Rectangle(shortSide, longSide, Color.MOCCASIN),
-                    centerOffX = 0.0,
-                    centerOffY = 0.0
+                    Rectangle(centerPositionX, centerPositionY, longSide, shortSide)
                 )
-            body.shape.layoutX = centerPositionX
-            body.shape.layoutY = centerPositionY
+            body.shape.fill = Color.MOCCASIN
+            val bodyCenter = Dot(centerPositionX - shortSide / 2, centerPositionX + longSide / 2)
             val sensorRight = Sensor(
                 Circle(centerPositionX + sensorsDistance / 2, centerPositionY + longSide / 2, sensorMotorRadius),
-                centerOffY = longSide / 2,
-                centerOffX = sensorsDistance / 2,
                 polarity = 1
             )
             val sensorLeft = Sensor(
                 Circle(centerPositionX - sensorsDistance / 2, centerPositionY + longSide / 2, sensorMotorRadius),
-                centerOffY = longSide / 2,
-                centerOffX = -sensorsDistance / 2,
                 polarity = -1
             )
             val motorRight = Motor(
-                Circle(centerPositionX + sensorsDistance / 2, centerPositionY - longSide / 2, sensorMotorRadius),
-                centerOffY = -longSide / 2,
-                centerOffX = sensorsDistance / 2
+                Circle(centerPositionX + sensorsDistance / 2, centerPositionY - longSide / 2, sensorMotorRadius)
             )
             val motorLeft = Motor(
-                Circle(centerPositionX - sensorsDistance / 2, centerPositionY - longSide / 2, sensorMotorRadius),
-                centerOffY = -longSide / 2,
-                centerOffX = -sensorsDistance / 2
+                Circle(centerPositionX - sensorsDistance / 2, centerPositionY - longSide / 2, sensorMotorRadius)
             )
 
             return Vehicle(

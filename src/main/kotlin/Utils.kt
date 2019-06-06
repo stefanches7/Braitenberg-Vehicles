@@ -16,29 +16,33 @@ inline fun check(value: Boolean, lazyMessage: () -> Any): Unit {
     }
 }
 
-fun computeAngle(firstLineTwoDots: Array<Dot>, secondLineTwoDots: Array<Dot>, atan: (Double) -> Double): Double {
-    check(firstLineTwoDots.size >= 2 && secondLineTwoDots.size >= 2) { throw IllegalArgumentException("Not enough coordinates!") }
+fun angleToXAxis(firstLineTwoDots: Array<Dot>): Double {
+    check(firstLineTwoDots.size >= 2) { throw IllegalArgumentException("Not enough coordinates!") }
     val (l1d1, l1d2) = firstLineTwoDots
-    val (l2d1, l2d2) = secondLineTwoDots
-    val slL1 = (l1d2.y - l1d1.y) / (l1d2.x - l1d1.x)
-    val slL2 = (l2d2.y - l2d1.y) / (l2d2.x - l2d1.x)
-    val tan = slL1 * slL2 / (1 + slL1 * slL2)
-    return atan(tan)
+    val alpha = (l1d2.y - l1d1.y) / (l1d2.x - l1d1.x) //radian = slope
+    return alpha
 }
 
 data class Dot(val x: Double, val y: Double)
 
-class DoubleVector(val x: Double, val y: Double) {
+class DoubleVector(var x: Double, var y: Double) {
     operator fun plus(v: DoubleVector): DoubleVector {
-        return DoubleVector(this.x + v.x, this.y + v.y)
-
+        this.x += v.x
+        this.y += v.y
+        return this
     }
 
-    operator fun plus(d: DoubleArray): DoubleVector {
-        return DoubleVector(this.x + d[0], this.y + d[1])
+    operator fun plus(d: DoubleArray) = run {
+        this.x += d[0]
+        this.y += d[1]
+        this
     }
 
-    operator fun unaryMinus() = DoubleVector(-x, -y)
+    operator fun unaryMinus() = run {
+        this.x = -x
+        this.y = -y
+        this
+    }
 
     operator fun times(v: DoubleVector) = DoubleVector(x * v.x, y * v.y)
 

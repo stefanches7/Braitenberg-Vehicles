@@ -1,9 +1,6 @@
 package presenter
 
 import agent.Vehicle
-import javafx.beans.property.DoubleProperty
-import javafx.scene.Node
-import javafx.scene.shape.Shape
 import model.SimModel
 import tornadofx.*
 import view.SimView
@@ -40,9 +37,9 @@ class SimPresenter : Controller() {
                 Vehicle.simpleVehicle(
                     Random.nextDouble(-worldWidth / 2, worldWidth / 2),
                     Random.nextDouble(-worldHeight / 2, worldHeight / 2),
-                    vehicleLength, vehicleWidth, 1.0, 10.0,
-                    Random.nextDouble(-worldWidth / 2, worldWidth / 2),
-                    Random.nextDouble(-worldWidth / 2, worldWidth / 2)
+                    vehicleWidth, vehicleLength, 1.0, 10.0,
+                    Random.nextDouble(-10.0, 10.0),
+                    Random.nextDouble(-10.0, 10.0)
                 )
             )
 
@@ -65,21 +62,19 @@ class SimPresenter : Controller() {
     fun updateRender() {
         if (running) {
             val vehicles = model.vehicles
-            val propertyToEndValue: MutableMap<DoubleProperty, Double> = mutableMapOf()
-            vehicles.forEach {
-                it.updateVelocity(model.objects)
-                val velocity = it.speed
-                val bodyparts: List<Node> = it.render.element.children.filter { bp -> bp is Shape }
-                // Movement animation.
-
-                bodyparts.forEach { part ->
-                    propertyToEndValue[part.layoutXProperty()] = part.layoutX + velocity.x
-                    propertyToEndValue[part.layoutXProperty()] = part.layoutY + velocity.y
-                }
-            }
             val timeline = timeline {
                 keyframe(interval.millis) {
-                    propertyToEndValue.forEach { (t, u) -> this += keyvalue(t, u) }
+                    vehicles.forEach {
+                        it.updateVelocity(model.objects)
+                        val newVelocity = it.speed
+                        val bodyPartsList = it.render.list
+                        bodyPartsList.forEach { bp ->
+                            run {
+                                this += keyvalue(bp.layoutXProperty(), bp.layoutX + newVelocity.x)
+                                this += keyvalue(bp.layoutYProperty(), bp.layoutY + newVelocity.y)
+                            }
+                        }
+                    }
                 }
             }
             timeline.setOnFinished { fire(RenderReadyEvent()) }
