@@ -24,9 +24,9 @@ class WelcomeScreen : View("Braitenberg vehicles simulation") {
                 }
             }
             button {
-                text("Start simulation" )
+                text("Start simulation")
                 action {
-                    presenter.startSimulation(simconf.item)
+                    //presenter.startSimulation(simconf.item)
                 }
                 enableWhen(simconf.valid)
             }

@@ -1,3 +1,6 @@
+package agent
+
+import check
 import javafx.scene.shape.Shape
 
 interface BodyPart {
@@ -12,7 +15,8 @@ class Body(
     override val centerOffY: Double
 ) : BodyPart
 
-class Motor(override val shape: Shape, override val centerOffX: Double, override val centerOffY: Double) : BodyPart {
+class Motor(override val shape: Shape, override val centerOffX: Double, override val centerOffY: Double) :
+    BodyPart {
 
     fun move(processedSenses: FloatArray): FloatArray {
         return FloatArray(0)
@@ -21,7 +25,7 @@ class Motor(override val shape: Shape, override val centerOffX: Double, override
 
 class Sensor(
     override val shape: Shape,
-    override val centerOffX: Double,
+    override val centerOffX: Double, //
     override val centerOffY: Double,
     val polarity: Int
 ) : BodyPart {

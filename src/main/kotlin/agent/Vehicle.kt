@@ -1,15 +1,20 @@
-import javafx.scene.Node
+package agent
+
+import DoubleVector
+import check
+import javafx.scene.Group
 import javafx.scene.layout.StackPane
+import javafx.scene.paint.Color
 import javafx.scene.shape.Circle
 import javafx.scene.shape.Rectangle
-import javafx.scene.shape.Shape
 import tornadofx.*
+import world.WorldObject
 
-class Vehicle(val body: Body, val sensors: Array<Sensor>, val motors: Array<Motor>, var speed: Vector) {
-    val render = VehicleRender()
+class Vehicle(val body: Body, val sensors: Array<Sensor>, val motors: Array<Motor>, var speed: DoubleVector) {
+    val render = VehicleRender(body, sensors, motors)
 
     fun updateVelocity(affectors: Collection<WorldObject>) {
-        var velVec: Vector = this.speed
+        var velVec: DoubleVector = this.speed
         affectors.forEach {
             val wo = it
             sensors.forEach { ite ->
@@ -19,19 +24,13 @@ class Vehicle(val body: Body, val sensors: Array<Sensor>, val motors: Array<Moto
         this.speed = velVec
     }
 
-    inner class VehicleRender : StackPane() {
-        val element: StackPane = stackpane {
-            body.shape
-            motors.forEach { it.shape }
-            sensors.forEach { it.shape }
-        }
+    inner class VehicleRender(body: Body, sensors: Array<Sensor>, motors: Array<Motor>) : StackPane() {
+        val element: Group = group()
 
-        fun update(velocity: Vector) {
-            val bodyparts: List<Node> = element.children.filter { it is Shape }
-            bodyparts.forEach {
-                it.layoutXProperty().animate(it.layoutX + velocity.x, 1.seconds)
-                it.layoutYProperty().animate(it.layoutY + velocity.y, 1.seconds)
-            }
+        init {
+            element += body.shape
+            motors.forEach { element += it.shape }
+            sensors.forEach { element += it.shape }
         }
 
     }
@@ -53,7 +52,14 @@ class Vehicle(val body: Body, val sensors: Array<Sensor>, val motors: Array<Moto
             check(sensorsDistance <= shortSide) {
                 throw IllegalArgumentException("Sensors distance should be shorter than side!")
             }
-            val body = Body(Rectangle(shortSide, longSide), centerOffX = centerPositionX, centerOffY = centerPositionY)
+            val body =
+                Body(
+                    Rectangle(shortSide, longSide, Color.MOCCASIN),
+                    centerOffX = 0.0,
+                    centerOffY = 0.0
+                )
+            body.shape.layoutX = centerPositionX
+            body.shape.layoutY = centerPositionY
             val sensorRight = Sensor(
                 Circle(centerPositionX + sensorsDistance / 2, centerPositionY + longSide / 2, sensorMotorRadius),
                 centerOffY = longSide / 2,
@@ -81,7 +87,7 @@ class Vehicle(val body: Body, val sensors: Array<Sensor>, val motors: Array<Moto
                 body,
                 arrayOf(sensorLeft, sensorRight),
                 arrayOf(motorLeft, motorRight),
-                Vector(speedX, speedY)
+                DoubleVector(speedX, speedY)
             )
         }
     }

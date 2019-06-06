@@ -1,3 +1,8 @@
+package world
+
+import Dot
+import DoubleVector
+import computeAngle
 import javafx.scene.shape.Circle
 import javafx.scene.shape.Shape
 import kotlin.math.atan
@@ -5,10 +10,6 @@ import kotlin.math.cos
 import kotlin.math.pow
 import kotlin.math.sin
 import kotlin.random.Random
-
-class SimModel(val world: SimWorld, var activeVehicles: Set<Vehicle>)
-
-class SimWorld(val worldWidth: Double, val worldHeight: Double, val objects: MutableSet<WorldObject>)
 
 /**
  * effectStrength is relative to the vehicle's attraction
@@ -19,13 +20,13 @@ class WorldObject(val x: Double, val y: Double, val size: Double, val effectStre
     /**
      * Newton's law. Returns (x, y) acceleration (mass is assumed to be 1 => a=F)
      */
-    fun effectOnDistance(toX: Double, toY: Double): Vector {
+    fun effectOnDistance(toX: Double, toY: Double): DoubleVector {
         val G = 10
         val rSquare = (toX - this.x).pow(2) + (toY - this.y).pow(2)
         val F = G * this.effectStrength / (rSquare)
         val alpha =
             computeAngle(arrayOf(Dot(x, y), Dot(toX, toY)), arrayOf(Dot(toX, toY), Dot(toX + 1, toY)), ::atan)
-        return Vector(F * cos(alpha), F * sin(alpha))
+        return DoubleVector(F * cos(alpha), F * sin(alpha))
     }
 
     companion object {
@@ -33,7 +34,7 @@ class WorldObject(val x: Double, val y: Double, val size: Double, val effectStre
             return WorldObject(
                 Random.nextDouble(worldWidth),
                 Random.nextDouble(worldHeight),
-                Random.nextDouble(1.0, 10.0),
+                10.0,
                 Random.nextDouble(1.0, 10.0)
             )
         }
