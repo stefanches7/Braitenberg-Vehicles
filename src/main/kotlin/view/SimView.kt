@@ -2,9 +2,11 @@ package view
 
 import agent.Vehicle
 import fac
+import javafx.scene.input.KeyCode
+import javafx.scene.input.KeyEvent
 import javafx.scene.layout.AnchorPane
-import javafx.scene.layout.Priority
 import model.SimModel
+import presenter.RenderReadyEvent
 import presenter.SimPresenter
 import tornadofx.*
 import world.WorldObject
@@ -13,26 +15,27 @@ class SimView : View() {
     val presenter: SimPresenter = SimPresenter()
     val canvas: AnchorPane
     val registeredVehiclesRender: MutableList<Vehicle.VehicleRender> = mutableListOf()
-    val frameRate = 20
+    val frameRate = 30
 
     override val root = vbox {
-        anchorpane {
-            anchorpaneConstraints {
-                topAnchor = 0.0
-                bottomAnchor = 0.0
-                rightAnchor = 0.0
-                leftAnchor = 0.0
+        anchorpane {}
+        keyboard {
+            addEventFilter(KeyEvent.KEY_PRESSED) { e ->
+                when (e.code) {
+                    KeyCode.ESCAPE -> presenter.running = false
+                    KeyCode.SPACE -> {
+                        presenter.paused = !presenter.paused
+                        if (!presenter.paused) fire(RenderReadyEvent())
+                    }
+                    else -> Unit
+                }
             }
-        }
-        vboxConstraints {
-            vgrow = Priority.ALWAYS
         }
     }
 
     init {
-        val (worldWidth, worldHeight, startingVehicles) = arrayOf(1000.0, 1000.0, 10.0)
-        canvas = root.children[0] as AnchorPane
-        canvas.setOnKeyPressed { presenter.running = false }
+        val (worldWidth, worldHeight, startingVehicles) = arrayOf(1000.0, 1000.0, 100.0)
+        canvas = root.children.filtered { it is AnchorPane }[0] as AnchorPane
         runAsync {
             presenter.startSimulation(
                 worldWidth,

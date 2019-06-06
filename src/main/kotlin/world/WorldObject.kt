@@ -30,12 +30,18 @@ class WorldObject(val x: Double, val y: Double, val size: Double, val effectStre
     }
 
     companion object {
-        fun randomWorldObject(worldWidth: Double, worldHeight: Double): WorldObject {
+        fun randomWorldObject(
+            worldWidth: Double,
+            worldHeight: Double,
+            effectMin: Double,
+            effectMax: Double,
+            size: Double
+        ): WorldObject {
             return WorldObject(
                 Random.nextDouble(worldWidth),
                 Random.nextDouble(worldHeight),
-                10.0,
-                Random.nextDouble(100.0, 1000.0)
+                size,
+                Random.nextDouble(effectMin, effectMax)
             )
         }
     }

@@ -8,15 +8,17 @@ import world.WorldObject
 import kotlin.math.ceil
 import kotlin.random.Random
 
-class SimPresenter : Controller() {
+class SimPresenter() : Controller() {
     lateinit var model: SimModel
     lateinit var view: SimView
     var running = true
+    var paused = false
     var interval: Int = 0
 
     init {
         subscribe<RenderReadyEvent> {
-            updateRender()
+            if (running and !paused)
+                updateRender()
         }
     }
 
@@ -35,8 +37,8 @@ class SimPresenter : Controller() {
             val vehicleWidth = 20.0
             vehicles.add(
                 Vehicle.simpleVehicle(
-                    Random.nextDouble(-worldWidth / 2, worldWidth / 2),
-                    Random.nextDouble(-worldHeight / 2, worldHeight / 2),
+                    Random.nextDouble(0.0, worldWidth),
+                    Random.nextDouble(0.0, worldHeight),
                     vehicleWidth, vehicleLength, 1.0, 10.0,
                     Random.nextDouble(-10.0, 10.0),
                     Random.nextDouble(-10.0, 10.0)
@@ -45,7 +47,18 @@ class SimPresenter : Controller() {
 
         }
         val startWorldObjects: MutableSet<WorldObject> = mutableSetOf()
-        for (i in 1..5) startWorldObjects.add(WorldObject.randomWorldObject(worldWidth, worldHeight))
+        val effectMin = 10.0
+        val effectMax = 100.0
+        val objectSize = 10.0
+        for (i in 1..20) startWorldObjects.add(
+            WorldObject.randomWorldObject(
+                worldWidth,
+                worldHeight,
+                effectMin,
+                effectMax,
+                objectSize
+            )
+        )
         model = SimModel(
             worldWidth,
             worldHeight,
@@ -65,13 +78,10 @@ class SimPresenter : Controller() {
             val timeline = timeline {
                 keyframe(interval.millis) {
                     vehicles.forEach {
-                        it.updateVelocity(model.objects)
-                        val newVelocity = it.speed
-                        val bodyPartsList = it.render.list
-                        bodyPartsList.forEach { bp ->
+                        it.updateMovementVector(model.objects)
+                        it.render.currentUpdate().forEach { kv ->
                             run {
-                                this += keyvalue(bp.layoutXProperty(), bp.layoutX + newVelocity.x)
-                                this += keyvalue(bp.layoutYProperty(), bp.layoutY + newVelocity.y)
+                                this += kv
                             }
                         }
                     }

@@ -1,3 +1,5 @@
+import javafx.geometry.Bounds
+
 /**
  * This class is more for trying around, than bringing real value.
  */
@@ -25,7 +27,7 @@ fun angleToXAxis(firstLineTwoDots: Array<Dot>): Double {
 
 data class Dot(val x: Double, val y: Double)
 
-class DoubleVector(var x: Double, var y: Double) {
+data class DoubleVector(var x: Double, var y: Double) {
     operator fun plus(v: DoubleVector): DoubleVector {
         this.x += v.x
         this.y += v.y
@@ -48,4 +50,20 @@ class DoubleVector(var x: Double, var y: Double) {
 
     operator fun times(c: Double) = DoubleVector(c * x, c * y)
     operator fun times(c: Int) = DoubleVector(c * x, c * y)
+}
+
+fun center(bounds: Bounds): Dot {
+    return Dot((bounds.minX + bounds.maxX) / 2, (bounds.minY + bounds.maxY) / 2)
+}
+
+fun sum(vararg elements: Double): Double {
+    var out = 0.0
+    elements.forEach { out += it }
+    return out
+}
+
+fun prod(vararg elements: Double): Double {
+    var out = 0.0
+    elements.forEach { out *= it }
+    return out
 }
