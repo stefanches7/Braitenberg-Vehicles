@@ -1,4 +1,7 @@
 import javafx.geometry.Bounds
+import kotlin.math.PI
+import kotlin.math.cos
+import kotlin.math.sin
 
 /**
  * This class is more for trying around, than bringing real value.
@@ -18,9 +21,8 @@ inline fun check(value: Boolean, lazyMessage: () -> Any): Unit {
     }
 }
 
-fun angleToXAxis(firstLineTwoDots: Array<Dot>): Double {
-    check(firstLineTwoDots.size >= 2) { throw IllegalArgumentException("Not enough coordinates!") }
-    val (l1d1, l1d2) = firstLineTwoDots
+// TODO FIX wrong angle calculation!
+fun angleToXAxis(l1d1: Dot, l1d2: Dot = Dot(0.0, 0.0)): Double {
     val alpha = (l1d2.y - l1d1.y) / (l1d2.x - l1d1.x) //radian = slope
     return alpha
 }
@@ -66,4 +68,19 @@ fun prod(vararg elements: Double): Double {
     var out = 0.0
     elements.forEach { out *= it }
     return out
+}
+
+fun DoubleVector.rotate(theta: Double) {
+    // angle transformation multiplication
+    val x_tick = this.x * cos(theta) - this.y * sin(theta)
+    val y_tick = this.y * cos(theta) + this.x * sin(theta)
+    this.x = x_tick
+    this.y = y_tick
+}
+
+/**
+ * Radian to degrees conversion
+ */
+fun Double.degrees(): Double {
+    return this * 180 / PI
 }

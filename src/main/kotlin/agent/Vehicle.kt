@@ -3,13 +3,15 @@ package agent
 import Dot
 import DoubleVector
 import angleToXAxis
-import center
 import check
+import degrees
 import javafx.animation.KeyValue
 import javafx.scene.layout.StackPane
 import javafx.scene.paint.Color
+import javafx.scene.shape.Circle
 import javafx.scene.shape.Rectangle
 import javafx.scene.shape.Shape
+import rotate
 import sum
 import world.WorldObject
 
@@ -21,12 +23,16 @@ class Vehicle(
 ) {
     val render = VehicleRender(body, sensors, motors)
     var oldSpeed: DoubleVector = DoubleVector(0.0, 0.0) //used for rotation computation
+    var angle = 0.0
+        get() = angleToXAxis(Dot(this.speed.x, this.speed.y))
+    var center = Dot(body.shape.layoutX + body.centerOffset.x, body.shape.layoutY + body.centerOffset.y)
+        get() = Dot(body.shape.layoutX + body.centerOffset.x, body.shape.layoutY + body.centerOffset.y)
 
     /**
-     * Changes velocity and angle of current vehicle, based on sensors affected by objects in the world.
+     * Changes velocity and dAngle of current vehicle, based on sensors affected by objects in the world.
      */
     fun updateMovementVector(affectors: Collection<WorldObject>) {
-        var velVec: DoubleVector = this.speed
+        var velVec: DoubleVector = this.speed.copy()
         oldSpeed = this.speed.copy()
         affectors.forEach {
             val wo = it
@@ -36,22 +42,17 @@ class Vehicle(
                 ) * ite.polarity
             }
         }
-    }
-
-    fun angleToX(): Double {
-        return angleToXAxis(arrayOf(Dot(0.0, 0.0), Dot(this.speed.x, this.speed.y)))
+        this.speed = velVec
     }
 
     /**
-     * Used for JavaFX transformation.
+     * Next rotation angle, given in radians.
      */
     fun rotateAngle(): Double {
-        return angleToXAxis(
-            arrayOf(
-                Dot(0.0, 0.0),
-                Dot(this.oldSpeed.x, this.oldSpeed.y)
-            )
-        ) - this.angleToX()
+        // Delta of the angles of old and current speed vector
+        return this.angle - angleToXAxis(
+            Dot(this.oldSpeed.x, this.oldSpeed.y)
+        )
     }
 
 
@@ -64,27 +65,23 @@ class Vehicle(
             sensors.forEach { list.add(it.shape) }
         }
 
-        fun center(): Dot {
-            return center(body.shape.boundsInParent)
-        }
-
         /**
-         * Takes speed and angle now and calculates transformations for each body part
+         * Takes speed and dAngle now and calculates transformations for each body part
          */
         fun currentUpdate(): Set<KeyValue> {
             val out: MutableSet<KeyValue> = mutableSetOf()
             // rotate body
-            out.add(KeyValue(body.shape.rotateProperty(), rotateAngle()))
-            // move body
-            out.add(KeyValue(body.shape.layoutXProperty(), center().x + speed.x))
-            out.add(KeyValue(body.shape.layoutYProperty(), center().y + speed.y))
+            out.add(KeyValue(body.shape.rotateProperty(), body.shape.rotate + rotateAngle().degrees()))
+            body.centerOffset.rotate(-rotateAngle())
             // move parts of the body
-            val pointRotation: DoubleVector = speed + (-oldSpeed)
             val put = { bp: BodyPart ->
-                val shiftX = sum(this.center().x, bp.centerOffset.x, pointRotation.x, speed.x)
-                val shiftY = sum(this.center().y, bp.centerOffset.y, pointRotation.y, speed.y)
-                //out.add(KeyValue(bp.shape.centerXProperty(), shiftX))
-                out.add(KeyValue(bp.shape.layoutYProperty(), shiftY))
+                val shape: Circle = bp.shape as Circle //TODO generalize cast
+                //bp.rotateAroundCenter(rotateAngle())
+                // center offset is already angle updated
+                val shiftX = sum(speed.x, bp.centerOffset.x + 1.0) //+radius
+                val shiftY = sum(speed.y, bp.centerOffset.y + 1.0)
+                out.add(KeyValue(shape.translateXProperty(), shiftX))
+                out.add(KeyValue(shape.translateYProperty(), shiftY))
             }
             sensors.forEach {
                 put(it)
@@ -92,6 +89,9 @@ class Vehicle(
             motors.forEach {
                 put(it)
             }
+            // move body
+            out.add(KeyValue(body.shape.translateXProperty(), speed.x))
+            out.add(KeyValue(body.shape.translateYProperty(), speed.y))
             return out
         }
 
@@ -102,8 +102,8 @@ class Vehicle(
          * Rectangular, round sensors, round motors, straight sensors-motors of different polarities.
          */
         fun simpleVehicle(
-            leftTopAngleX: Double,
-            leftTopAngleY: Double,
+            leftTopX: Double,
+            leftTopY: Double,
             shortSide: Double,
             longSide: Double,
             sensorMotorRadius: Double,
@@ -116,28 +116,28 @@ class Vehicle(
             }
             val body =
                 Body(
-                    Rectangle(leftTopAngleX, leftTopAngleY, longSide, shortSide),
-                    DoubleVector(0.0, 0.0)
+                    Rectangle(leftTopX, leftTopY, longSide, shortSide),
+                    DoubleVector(longSide / 2, shortSide / 2)
                 )
             body.shape.fill = Color.MOCCASIN
             // Rectangle is default positioned with long side horisontally
-            val bodyCenter = Dot(leftTopAngleX + longSide / 2, leftTopAngleX - shortSide / 2)
+            val bodyCenter = Dot(leftTopX + longSide / 2, leftTopY + shortSide / 2)
             val sensorRight = Sensor(
-                centerOffset = DoubleVector(longSide / 2, -sensorsDistance / 2),
+                centerOffset = DoubleVector(-longSide / 2, -sensorsDistance / 2),
                 bodyCenter = bodyCenter,
                 polarity = 1
             )
             val sensorLeft = Sensor(
-                centerOffset = DoubleVector(longSide / 2, sensorsDistance / 2),
+                centerOffset = DoubleVector(-longSide / 2, sensorsDistance / 2),
                 bodyCenter = bodyCenter,
                 polarity = -1
             )
             val motorRight = Motor(
-                centerOffset = DoubleVector(-longSide / 2, -sensorsDistance / 2),
+                centerOffset = DoubleVector(longSide / 2, -sensorsDistance / 2),
                 bodyCenter = bodyCenter
             )
             val motorLeft = Motor(
-                centerOffset = DoubleVector(-longSide / 2, sensorsDistance / 2),
+                centerOffset = DoubleVector(longSide / 2, sensorsDistance / 2),
                 bodyCenter = bodyCenter
             )
 

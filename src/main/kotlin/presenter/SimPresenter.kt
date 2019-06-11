@@ -28,7 +28,8 @@ class SimPresenter() : Controller() {
     ) {
         this.view = view
         interval = ceil(1000F / frameRate).toInt()
-        model = SimModel.Factory.defaultModel(800.0, 1000.0)
+        model =
+            SimModel.Factory.defaultModel(600.0, 400.0, vehicleHeight = 20.0, vehicleLength = 40.0, effectMax = 50.0)
         this.view.renderWorld(model)
         updateRender()
     }

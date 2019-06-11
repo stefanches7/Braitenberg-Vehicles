@@ -26,7 +26,7 @@ class WorldObject(
         val rSquare = (toX - this.x).pow(2) + (toY - this.y).pow(2)
         val F = G * this.effectStrength * 1000 / (rSquare)
         val alpha = angleToXAxis(
-            arrayOf(Dot(x, y), Dot(toX, toY))
+            Dot(x, y), Dot(toX, toY)
         )
         return DoubleVector(F * cos(alpha), F * sin(alpha))
     }

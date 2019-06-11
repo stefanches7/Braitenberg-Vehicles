@@ -25,7 +25,9 @@ class SimModel(
             vehicleLength: Double = floor(worldWidth / 80),
             vehicleHeight: Double = floor(worldHeight / 150),
             worldObjectCount: Int = 5,
-            sensorsDistance: Double = vehicleHeight / 2.0
+            sensorsDistance: Double = vehicleHeight / 2.0,
+            effectMin: Double = 10.0,
+            effectMax: Double = 100.0
         ): SimModel {
             val vehicles: MutableSet<Vehicle> = mutableSetOf()
             for (i in 1..vehiclesCount.toInt()) {
@@ -42,8 +44,6 @@ class SimModel(
             }
 
             val startWorldObjects: MutableSet<WorldObject> = mutableSetOf()
-            val effectMin = 10.0
-            val effectMax = 100.0
             val objectSize = 10.0
             for (i in 1..worldObjectCount) startWorldObjects.add(
                 WorldObject.randomWorldObject(

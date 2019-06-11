@@ -1,7 +1,6 @@
 package view
 
 import agent.Vehicle
-import fac
 import javafx.scene.input.KeyCode
 import javafx.scene.input.KeyEvent
 import javafx.scene.layout.AnchorPane
@@ -45,7 +44,6 @@ class SimView : View() {
                 frameRate.toByte()
             )
         } ui { }
-        fac(5)
     }
 
     fun renderWorld(model: SimModel) {
