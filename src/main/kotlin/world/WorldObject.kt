@@ -24,11 +24,11 @@ class WorldObject(
     fun effectOnDistance(toX: Double, toY: Double): DoubleVector {
         val G = 10
         val rSquare = (toX - this.x).pow(2) + (toY - this.y).pow(2)
-        val F = G * this.effectStrength * 1000 / (rSquare)
+        val F = G * this.effectStrength * 100 / (rSquare)
         val alpha = angleToXAxis(
             Dot(x, y), Dot(toX, toY)
         )
-        return DoubleVector(F * cos(alpha), F * sin(alpha))
+        return DoubleVector(F * cos(alpha), -F * sin(alpha)) // y to top <=> y negative
     }
 
     companion object {

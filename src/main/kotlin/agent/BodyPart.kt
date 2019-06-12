@@ -6,6 +6,7 @@ import check
 import javafx.scene.shape.Circle
 import javafx.scene.shape.Shape
 import rotate
+import world.WorldObject
 
 abstract class BodyPart(
     val shape: Shape,
@@ -54,6 +55,14 @@ class Sensor(
 
     init {
         check(polarity == 1 || polarity == -1) { throw IllegalArgumentException("Polarity must be 1 or -1!") }
+    }
+
+    fun feel(affectors: Collection<WorldObject>): DoubleVector {
+        var out = DoubleVector(0.0, 0.0)
+        affectors.forEach {
+            out += it.effectOnDistance(this.x, this.y) * this.polarity
+        }
+        return out
     }
 
 }

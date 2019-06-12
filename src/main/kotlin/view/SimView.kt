@@ -14,7 +14,7 @@ class SimView : View() {
     val presenter: SimPresenter = SimPresenter()
     val canvas: AnchorPane
     val registeredVehiclesRender: MutableList<Vehicle.VehicleRender> = mutableListOf()
-    val frameRate = 30
+    val frameRate = 1
 
     override val root = vbox {
         anchorpane {}

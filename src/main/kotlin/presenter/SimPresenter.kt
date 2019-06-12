@@ -29,7 +29,10 @@ class SimPresenter() : Controller() {
         this.view = view
         interval = ceil(1000F / frameRate).toInt()
         model =
-            SimModel.Factory.defaultModel(600.0, 400.0, vehicleHeight = 20.0, vehicleLength = 40.0, effectMax = 50.0)
+            SimModel.Factory.defaultModel(
+                600.0, 400.0, vehicleHeight = 20.0, vehicleLength = 40.0, effectMin = 10.0,
+                effectMax = 50.0, worldObjectCount = 10
+            )
         this.view.renderWorld(model)
         updateRender()
     }
@@ -43,8 +46,7 @@ class SimPresenter() : Controller() {
             val timeline = timeline {
                 keyframe(interval.millis) {
                     vehicles.forEach {
-                        it.updateMovementVector(model.objects)
-                        it.render.currentUpdate().forEach { kv ->
+                        it.currentUpdate(model.objects).forEach { kv ->
                             run {
                                 this += kv
                             }

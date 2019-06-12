@@ -1,5 +1,6 @@
 package model
 
+import Dot
 import agent.Vehicle
 import world.WorldObject
 import java.lang.Math.floor
@@ -15,6 +16,7 @@ class SimModel(
     var vehicles: MutableSet<Vehicle>
 ) {
     companion object Factory {
+        var worldEnd = Dot(0.0, 0.0)
         /**
          * All vehicles default, have same size, default world objects.
          */
@@ -29,6 +31,7 @@ class SimModel(
             effectMin: Double = 10.0,
             effectMax: Double = 100.0
         ): SimModel {
+            worldEnd = Dot(worldWidth, worldHeight)
             val vehicles: MutableSet<Vehicle> = mutableSetOf()
             for (i in 1..vehiclesCount.toInt()) {
                 vehicles.add(
