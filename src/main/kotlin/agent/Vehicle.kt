@@ -6,11 +6,9 @@ import angleToXAxis
 import check
 import degrees
 import javafx.animation.KeyValue
-import javafx.scene.layout.StackPane
 import javafx.scene.paint.Color
 import javafx.scene.shape.Circle
 import javafx.scene.shape.Rectangle
-import javafx.scene.shape.Shape
 import model.SimModel
 import rotate
 import sum
@@ -24,51 +22,56 @@ class Vehicle(
     val sensors: Array<Sensor>,
     var speed: DoubleVector
 ) {
-    val render = VehicleRender(body, sensors, motors)
+    val bodyParts: MutableSet<BodyPart>
     var oldSpeed: DoubleVector = DoubleVector(0.0, 0.0) //used for rotation computation
-    var angle = 0.0
-        get() = angleToXAxis(Dot(this.speed.x, this.speed.y))
-    var x = this.body.shape.layoutX
-        get() = this.body.shape.layoutX
-    var y = this.body.shape.layoutX
-        get() = this.body.shape.layoutX
-//    var center = Dot(body.shape.layoutX + body.centerOffset.x, body.shape.layoutY + body.centerOffset.y)
-//        get() = Dot(body.shape.layoutX + body.centerOffset.x, body.shape.layoutY + body.centerOffset.y)
+
+    init {
+        bodyParts = mutableSetOf(body)
+        bodyParts.addAll(motors)
+        bodyParts.addAll(sensors)
+    }
+
+    fun getAngle() = angleToXAxis(Dot(this.speed.x, this.speed.y))
+    fun getX() = this.body.shape.layoutX
+    fun getY() = this.body.shape.layoutY
+
 
     /**
      * Changes velocity and dAngle of current vehicle, based on sensors affected by objects in the world.
      */
-    fun updateMovementVector(affectors: Collection<WorldObject>) {
+    fun updateSpeed(affectors: Collection<WorldObject>) {
         // save for angle computation
         this.oldSpeed = this.speed.copy()
         sensors.forEach {
-            this.speed += it.feel(affectors)
+            this.speed += it.percept(affectors)
         }
-
+        repulseFromWalls()
     }
 
     /**
      * Repulses vehicle off the wall, when it is close
      */
-    private fun wallsRepulsion() {
-        val aspiredX = this.x + this.speed.x
-        val aspiredY = this.y + this.speed.y
+    private fun repulseFromWalls() {
+        val aspiredX = this.getX() + this.speed.x
+        val aspiredY = this.getY() + this.speed.y
 
-        val (toLeft, toUp) = arrayOf(this.x, this.y)
-        val (toRight, toDown) = arrayOf(abs(SimModel.worldEnd.x - toLeft), abs(SimModel.worldEnd.y - toUp))
+        val (fromLeft, fromUp) = arrayOf(this.getX(), this.getY())
+        if (fromLeft == 0.0) return //just initialized
+        val (fromRight, fromDown) = arrayOf(abs(SimModel.worldEnd.x - fromLeft), abs(SimModel.worldEnd.y - fromUp))
         // truncate speed vectors to out of bounds
-        if (aspiredX > SimModel.worldEnd.x) this.speed.x = (SimModel.worldEnd.x - this.x) * 0.9
-        if (aspiredY > SimModel.worldEnd.y) this.speed.y = (SimModel.worldEnd.y - this.y) * 0.9
-        this.speed.x += abs(log10(toLeft / toRight)) //log a + log b = log ab
-        this.speed.y += abs(log10(toUp / toDown))
+        if (aspiredX > SimModel.worldEnd.x) this.speed.x = (SimModel.worldEnd.x - this.getX()) * 0.9
+        if (aspiredY > SimModel.worldEnd.y) this.speed.y = (SimModel.worldEnd.y - this.getY()) * 0.9
+        // TODO half-Morse potential?
+        this.speed.x += abs(log10(fromLeft)) - abs(log10(fromRight)) // add in the positive x, substract in negative (fromRight
+        this.speed.y += abs(log10(fromUp)) - abs(log10(fromDown))
     }
 
     /**
      * Next rotation angle, given in radians.
      */
-    fun rotateAngle(): Double {
+    fun rotationAngle(): Double {
         // Delta of the angles of old and current speed vector
-        return this.angle - angleToXAxis(
+        return this.getAngle() - angleToXAxis(
             Dot(this.oldSpeed.x, this.oldSpeed.y)
         )
     }
@@ -77,11 +80,11 @@ class Vehicle(
     /**
      * Takes speed and dAngle now and calculates transformations for each body part
      */
-    fun currentUpdate(objects: MutableSet<WorldObject>): Set<KeyValue> {
-        this.updateMovementVector(objects)
+    fun currentUpdate(affectors: MutableSet<WorldObject>): Set<KeyValue> {
+        this.updateSpeed(affectors)
         val out: MutableSet<KeyValue> = mutableSetOf()
         // rotate body
-        val rotateAngle = this.rotateAngle()
+        val rotateAngle = this.rotationAngle()
         out.add(KeyValue(body.shape.rotateProperty(), body.shape.rotate + rotateAngle.degrees()))
         this.body.centerOffset.rotate(rotateAngle)
         // move parts of the body
@@ -104,17 +107,6 @@ class Vehicle(
         out.add(KeyValue(body.shape.translateXProperty(), this.speed.x))
         out.add(KeyValue(body.shape.translateYProperty(), this.speed.y))
         return out
-    }
-
-    inner class VehicleRender(body: Body, sensors: Array<Sensor>, motors: Array<Motor>) : StackPane() {
-        val list: MutableList<Shape> = mutableListOf()
-
-        init {
-            list.add(body.shape)
-            motors.forEach { list.add(it.shape) }
-            sensors.forEach { list.add(it.shape) }
-        }
-
     }
 
     companion object Factory {

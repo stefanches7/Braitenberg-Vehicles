@@ -13,7 +13,6 @@ import world.WorldObject
 class SimView : View() {
     val presenter: SimPresenter = SimPresenter()
     val canvas: AnchorPane
-    val registeredVehiclesRender: MutableList<Vehicle.VehicleRender> = mutableListOf()
     val frameRate = 1
 
     override val root = vbox {
@@ -59,13 +58,10 @@ class SimView : View() {
         vehicles: Set<Vehicle>
     ) { //TODO
         vehicles.forEach {
-            if (!registeredVehiclesRender.contains(it.render)) { //add new
-                with(canvas) {
-                    it.render.list.forEach { bp ->
-                        this += bp
-                    }
+            with(canvas) {
+                it.bodyParts.forEach { bp ->
+                    this += bp.shape
                 }
-                registeredVehiclesRender.add(it.render)
             }
         }
     }

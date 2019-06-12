@@ -19,6 +19,9 @@ class SimPresenter() : Controller() {
         }
     }
 
+    /**
+     * Create world, starting vehicles & launch the rendering process.
+     */
     fun startSimulation(
         worldWidth: Double,
         worldHeight: Double,
