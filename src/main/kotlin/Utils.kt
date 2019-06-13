@@ -30,29 +30,68 @@ fun angleToXAxis(l1d1: Dot, l1d2: Dot = Dot(0.0, 0.0)): Double {
 
 data class Dot(val x: Double, val y: Double)
 
-data class DoubleVector(var x: Double, var y: Double) {
-    operator fun plus(v: DoubleVector): DoubleVector {
-        this.x += v.x
-        this.y += v.y
-        return this
+class DoubleVector(var elements: DoubleArray) {
+
+    var x = elements[0]
+        get() = elements[0]
+        set(value) {
+            elements[0] = value
+            field = value
+        }
+    var y = elements[1]
+        get() = elements[1]
+        set(value) {
+            elements[1] = value
+            field = value
+        }
+
+    fun rotate(theta: Double) {
+        check(elements.size == 2) { throw IllegalArgumentException("Can rotate only 2d arrays!") }
+        val (x, y) = elements
+        // angle transformation multiplication
+        val xTick = x * cos(theta) - y * sin(theta)
+        val yTick = y * cos(theta) + x * sin(theta)
+        this.elements = DoubleArray(2) { arrayOf(xTick, yTick)[it] }
     }
 
-    operator fun plus(d: DoubleArray) = run {
-        this.x += d[0]
-        this.y += d[1]
-        this
+    operator fun plus(vector: DoubleVector): DoubleVector {
+        check(this.elements.size == vector.elements.size) { throw Exception("Can't add vectors of different lengths!") }
+        var out = DoubleArray(this.elements.size)
+        for (i in 0 until elements.size) {
+            out[i] = this.elements[i] + vector.elements[i]
+        }
+        return DoubleVector(out)
     }
+
 
     operator fun unaryMinus() = run {
-        this.x = -x
-        this.y = -y
-        this
+        var out = DoubleArray(this.elements.size)
+        for (i in 0 until elements.size) {
+            out[i] = -this.elements[i]
+        }
+        DoubleVector(out)
     }
 
-    operator fun times(v: DoubleVector) = DoubleVector(x * v.x, y * v.y)
+    operator fun times(vector: DoubleVector): DoubleVector {
+        check(this.elements.size == vector.elements.size) { throw Exception("Can't add vectors of different lengths!") }
+        var out = DoubleArray(this.elements.size)
+        for (i in 0 until elements.size) {
+            out[i] = this.elements[i] * vector.elements[i]
+        }
+        return DoubleVector(out)
+    }
 
-    operator fun times(c: Double) = DoubleVector(c * x, c * y)
-    operator fun times(c: Int) = DoubleVector(c * x, c * y)
+    operator fun times(c: Double): DoubleVector {
+        var out = DoubleArray(this.elements.size)
+        for (i in 0 until elements.size) {
+            out[i] = this.elements[i] * c
+        }
+        return DoubleVector(out)
+    }
+
+    fun copy(): DoubleVector {
+        return DoubleVector(this.elements.copyOf())
+    }
 }
 
 fun center(bounds: Bounds): Dot {
@@ -71,17 +110,16 @@ fun prod(vararg elements: Double): Double {
     return out
 }
 
-fun DoubleVector.rotate(theta: Double) {
-    // angle transformation multiplication
-    val x_tick = this.x * cos(theta) - this.y * sin(theta)
-    val y_tick = this.y * cos(theta) + this.x * sin(theta)
-    this.x = x_tick
-    this.y = y_tick
-}
 
 /**
  * Radian to degrees conversion
  */
 fun Double.degrees(): Double {
     return this * 180 / PI
+}
+
+fun Array<DoubleVector>.sum(): DoubleVector {
+    var out = this[0]
+    for (i in 1 until this.size) out += this[i]
+    return out
 }

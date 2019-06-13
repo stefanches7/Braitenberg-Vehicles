@@ -28,7 +28,7 @@ class WorldObject(
         val alpha = angleToXAxis(
             Dot(x, y), Dot(toX, toY)
         )
-        return DoubleVector(F * cos(alpha), -F * sin(alpha)) // y to top <=> y negative
+        return DoubleVector(doubleArrayOf(F * cos(alpha), -F * sin(alpha))) // y to top <=> y negative
     }
 
     companion object {

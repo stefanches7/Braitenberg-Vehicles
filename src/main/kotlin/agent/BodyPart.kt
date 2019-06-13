@@ -5,7 +5,6 @@ import DoubleVector
 import check
 import javafx.scene.shape.Circle
 import javafx.scene.shape.Shape
-import rotate
 import world.WorldObject
 
 abstract class BodyPart(
@@ -58,9 +57,9 @@ class Sensor(
     }
 
     fun percept(affectors: Collection<WorldObject>): DoubleVector {
-        var out = DoubleVector(0.0, 0.0)
+        var out = DoubleVector(doubleArrayOf(0.0, 0.0))
         affectors.forEach {
-            out += it.effectOnDistance(this.x, this.y) * this.polarity
+            out += it.effectOnDistance(this.x, this.y) * (this.polarity.toDouble())
         }
         return out
     }

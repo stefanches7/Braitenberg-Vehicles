@@ -10,7 +10,6 @@ import javafx.scene.paint.Color
 import javafx.scene.shape.Circle
 import javafx.scene.shape.Rectangle
 import model.SimModel
-import rotate
 import sum
 import world.WorldObject
 import kotlin.math.abs
@@ -23,7 +22,7 @@ class Vehicle(
     var speed: DoubleVector
 ) {
     val bodyParts: MutableSet<BodyPart>
-    var oldSpeed: DoubleVector = DoubleVector(0.0, 0.0) //used for rotation computation
+    var oldSpeed: DoubleVector = DoubleVector(doubleArrayOf(0.0, 0.0)) //used for rotation computation
 
     init {
         bodyParts = mutableSetOf(body)
@@ -129,27 +128,27 @@ class Vehicle(
             val body =
                 Body(
                     Rectangle(leftTopX, leftTopY, longSide, shortSide),
-                    DoubleVector(longSide / 2, shortSide / 2)
+                    DoubleVector(doubleArrayOf(longSide / 2, shortSide / 2))
                 )
             body.shape.fill = Color.MOCCASIN
             // Rectangle is default positioned with long side horisontally
             val bodyCenter = Dot(leftTopX + longSide / 2, leftTopY + shortSide / 2)
             val sensorRight = Sensor(
-                centerOffset = DoubleVector(-longSide / 2, -sensorsDistance / 2),
+                centerOffset = DoubleVector(doubleArrayOf(-longSide / 2, -sensorsDistance / 2)),
                 bodyCenter = bodyCenter,
                 polarity = 1
             )
             val sensorLeft = Sensor(
-                centerOffset = DoubleVector(-longSide / 2, sensorsDistance / 2),
+                centerOffset = DoubleVector(doubleArrayOf(-longSide / 2, sensorsDistance / 2)),
                 bodyCenter = bodyCenter,
                 polarity = -1
             )
             val motorRight = Motor(
-                centerOffset = DoubleVector(longSide / 2, -sensorsDistance / 2),
+                centerOffset = DoubleVector(doubleArrayOf(longSide / 2, -sensorsDistance / 2)),
                 bodyCenter = bodyCenter
             )
             val motorLeft = Motor(
-                centerOffset = DoubleVector(longSide / 2, sensorsDistance / 2),
+                centerOffset = DoubleVector(doubleArrayOf(longSide / 2, sensorsDistance / 2)),
                 bodyCenter = bodyCenter
             )
 
@@ -157,7 +156,7 @@ class Vehicle(
                 body,
                 arrayOf(motorLeft, motorRight),
                 arrayOf(sensorLeft, sensorRight),
-                DoubleVector(speedX, speedY)
+                DoubleVector(doubleArrayOf(speedX, speedY))
             )
 
 
