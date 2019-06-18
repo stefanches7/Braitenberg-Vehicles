@@ -5,10 +5,10 @@ import javafx.scene.input.KeyCode
 import javafx.scene.input.KeyEvent
 import javafx.scene.layout.AnchorPane
 import model.SimModel
+import model.WorldObject
 import presenter.RenderReadyEvent
 import presenter.SimPresenter
 import tornadofx.*
-import world.WorldObject
 
 class SimView : View() {
     val presenter: SimPresenter = SimPresenter()

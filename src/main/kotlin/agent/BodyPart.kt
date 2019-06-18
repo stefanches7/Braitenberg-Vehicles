@@ -5,7 +5,8 @@ import DoubleVector
 import check
 import javafx.scene.shape.Circle
 import javafx.scene.shape.Shape
-import world.WorldObject
+import model.WorldObject
+import tornadofx.*
 
 abstract class BodyPart(
     val shape: Shape,
@@ -13,8 +14,10 @@ abstract class BodyPart(
 ) {
 
 
-    fun rotateAroundCenter(theta: Double) {
+    fun rotateAroundCenter(theta: Dimension<Dimension.AngularUnits>): DoubleVector {
+        val oldOffset = this.centerOffset.copy()
         centerOffset.rotate(theta)
+        return oldOffset
     }
 }
 
@@ -57,7 +60,7 @@ class Sensor(
     }
 
     fun percept(affectors: Collection<WorldObject>): DoubleVector {
-        var out = DoubleVector(doubleArrayOf(0.0, 0.0))
+        var out = DoubleVector(0.0, 0.0)
         affectors.forEach {
             out += it.effectOnDistance(this.x, this.y) * (this.polarity.toDouble())
         }

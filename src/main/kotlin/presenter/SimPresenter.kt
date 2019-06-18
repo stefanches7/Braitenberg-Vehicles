@@ -49,7 +49,7 @@ class SimPresenter() : Controller() {
             val timeline = timeline {
                 keyframe(interval.millis) {
                     vehicles.forEach {
-                        it.currentUpdate(model.objects).forEach { kv ->
+                        it.calcCurrentUpdate(model.objects).forEach { kv ->
                             run {
                                 this += kv
                             }

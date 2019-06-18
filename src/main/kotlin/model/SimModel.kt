@@ -2,7 +2,6 @@ package model
 
 import Dot
 import agent.Vehicle
-import world.WorldObject
 import java.lang.Math.floor
 import kotlin.random.Random
 

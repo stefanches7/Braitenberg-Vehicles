@@ -1,3 +1,0 @@
-package world
-
-class SimWorld()

@@ -1,4 +1,5 @@
 import javafx.geometry.Bounds
+import tornadofx.*
 import kotlin.math.PI
 import kotlin.math.atan2
 import kotlin.math.cos
@@ -30,8 +31,9 @@ fun angleToXAxis(l1d1: Dot, l1d2: Dot = Dot(0.0, 0.0)): Double {
 
 data class Dot(val x: Double, val y: Double)
 
-class DoubleVector(var elements: DoubleArray) {
+class DoubleVector(vararg elements: Double) {
 
+    var elements: DoubleArray = doubleArrayOf(*elements)
     var x = elements[0]
         get() = elements[0]
         set(value) {
@@ -45,12 +47,13 @@ class DoubleVector(var elements: DoubleArray) {
             field = value
         }
 
-    fun rotate(theta: Double) {
+    fun rotate(theta: Dimension<Dimension.AngularUnits>) {
         check(elements.size == 2) { throw IllegalArgumentException("Can rotate only 2d arrays!") }
         val (x, y) = elements
         // angle transformation multiplication
-        val xTick = x * cos(theta) - y * sin(theta)
-        val yTick = y * cos(theta) + x * sin(theta)
+        val rotAngle: Double = if (theta.units == Dimension.AngularUnits.deg) theta.value * PI / 180 else theta.value
+        val xTick = x * cos(rotAngle) - y * sin(rotAngle)
+        val yTick = y * cos(rotAngle) + x * sin(rotAngle)
         this.elements = DoubleArray(2) { arrayOf(xTick, yTick)[it] }
     }
 
@@ -60,7 +63,7 @@ class DoubleVector(var elements: DoubleArray) {
         for (i in 0 until elements.size) {
             out[i] = this.elements[i] + vector.elements[i]
         }
-        return DoubleVector(out)
+        return DoubleVector(*out)
     }
 
 
@@ -69,7 +72,7 @@ class DoubleVector(var elements: DoubleArray) {
         for (i in 0 until elements.size) {
             out[i] = -this.elements[i]
         }
-        DoubleVector(out)
+        DoubleVector(*out)
     }
 
     operator fun times(vector: DoubleVector): DoubleVector {
@@ -78,7 +81,7 @@ class DoubleVector(var elements: DoubleArray) {
         for (i in 0 until elements.size) {
             out[i] = this.elements[i] * vector.elements[i]
         }
-        return DoubleVector(out)
+        return DoubleVector(*out)
     }
 
     operator fun times(c: Double): DoubleVector {
@@ -86,11 +89,19 @@ class DoubleVector(var elements: DoubleArray) {
         for (i in 0 until elements.size) {
             out[i] = this.elements[i] * c
         }
-        return DoubleVector(out)
+        return DoubleVector(*out)
     }
 
     fun copy(): DoubleVector {
-        return DoubleVector(this.elements.copyOf())
+        return DoubleVector(*this.elements.copyOf())
+    }
+
+    override fun toString(): String {
+        val sb: StringBuilder = StringBuilder()
+        sb.append("( ")
+        elements.forEach { sb.append("${it} ") }
+        sb.append(")")
+        return String(sb)
     }
 }
 
@@ -123,3 +134,5 @@ fun Array<DoubleVector>.sum(): DoubleVector {
     for (i in 1 until this.size) out += this[i]
     return out
 }
+
+

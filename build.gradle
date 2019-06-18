@@ -27,8 +27,8 @@ mainClassName = 'SimApp'
 
 jar {
     manifest {
-        attributes (
-                'Manifest-Version' : 1.0,
+        attributes(
+                'Manifest-Version': 1.0,
                 'Main-Class': 'SimApp')
     }
 }
@@ -37,6 +37,9 @@ dependencies {
     implementation "org.jetbrains.kotlin:kotlin-reflect:$kotlinVersion"
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
     compile 'no.tornado:tornadofx:1.7.17'
+    testCompile group: 'org.jetbrains.kotlin', name: 'kotlin-test', version: '1.1.51'
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.3.1'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.3.1'
 }
 compileKotlin {
     kotlinOptions {
