@@ -1,9 +1,7 @@
 import javafx.geometry.Bounds
 import tornadofx.*
-import kotlin.math.PI
-import kotlin.math.atan2
-import kotlin.math.cos
-import kotlin.math.sin
+import java.nio.ByteBuffer
+import kotlin.math.*
 
 /**
  * This class is more for trying around, than bringing real value.
@@ -33,6 +31,9 @@ data class Dot(val x: Double, val y: Double)
 
 class DoubleVector(vararg elements: Double) {
 
+    val length
+        get() = sqrt(elements.map { it * it }.sum())
+
     var elements: DoubleArray = doubleArrayOf(*elements)
     var x = elements[0]
         get() = elements[0]
@@ -40,6 +41,7 @@ class DoubleVector(vararg elements: Double) {
             elements[0] = value
             field = value
         }
+
     var y = elements[1]
         get() = elements[1]
         set(value) {
@@ -60,8 +62,14 @@ class DoubleVector(vararg elements: Double) {
     operator fun plus(vector: DoubleVector): DoubleVector {
         check(this.elements.size == vector.elements.size) { throw Exception("Can't add vectors of different lengths!") }
         var out = DoubleArray(this.elements.size)
-        for (i in 0 until elements.size) {
-            out[i] = this.elements[i] + vector.elements[i]
+        for (i in 0 until max(elements.size, vector.elements.size)) {
+            when {
+                i > vector.elements.size ->
+                    out[i] = this.elements[i]
+                i > this.elements.size ->
+                    out[i] = vector.elements[i]
+                else -> out[i] = vector.elements[i] + this.elements[i]
+            }
         }
         return DoubleVector(*out)
     }
@@ -105,6 +113,12 @@ class DoubleVector(vararg elements: Double) {
     }
 }
 
+fun Collection<DoubleVector>.sum(): DoubleVector {
+    var out = DoubleVector(0.0, 0.0)
+    this.forEach { out += it }
+    return out
+}
+
 fun center(bounds: Bounds): Dot {
     return Dot((bounds.minX + bounds.maxX) / 2, (bounds.minY + bounds.maxY) / 2)
 }
@@ -134,5 +148,55 @@ fun Array<DoubleVector>.sum(): DoubleVector {
     for (i in 1 until this.size) out += this[i]
     return out
 }
+
+/**
+ * Matrix class.
+ */
+class Matrix<T>(val xSize: Int, val ySize: Int, val array: Array<Array<T>>) {
+
+    companion object {
+
+        inline operator fun <reified T> invoke() = Matrix(0, 0, Array(0, { emptyArray<T>() }))
+
+        inline operator fun <reified T> invoke(xWidth: Int, yWidth: Int) =
+            Matrix(xWidth, yWidth, Array(xWidth, { arrayOfNulls<T>(yWidth) }))
+
+        inline operator fun <reified T> invoke(xWidth: Int, yWidth: Int, operator: (Int, Int) -> (T)): Matrix<T> {
+            val array = Array(xWidth) {
+                val x = it
+                Array(yWidth) { el -> operator(x, el) }
+            }
+            return Matrix(xWidth, yWidth, array)
+        }
+    }
+
+    operator fun get(x: Int, y: Int): T {
+        return array[x][y]
+    }
+
+    operator fun set(x: Int, y: Int, t: T) {
+        array[x][y] = t
+    }
+
+    inline fun forEach(operation: (T) -> Unit) {
+        array.forEach { it.forEach { operation.invoke(it) } }
+    }
+
+    inline fun forEachIndexed(operation: (x: Int, y: Int, T) -> Unit) {
+        array.forEachIndexed { x, p -> p.forEachIndexed { y, t -> operation.invoke(x, y, t) } }
+    }
+
+    fun isUpperHalfFree(): Boolean {
+        for (i in 0..ySize) {
+            for (j in i..xSize)
+                if (this[i, j] != 0) return false
+        }
+        return true
+    }
+}
+
+fun Double.bytes(): ByteArray =
+    ByteBuffer.allocate(java.lang.Long.BYTES)
+        .putLong(java.lang.Double.doubleToLongBits(this)).array()
 
 
