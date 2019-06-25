@@ -4,6 +4,7 @@ import Dot
 import agent.Vehicle
 import java.lang.Math.floor
 import kotlin.random.Random
+import kotlin.reflect.KProperty
 
 /**
  * Contains buisness logic of the world.
@@ -16,6 +17,7 @@ class SimModel(
 ) {
     companion object Factory {
         var worldEnd = Dot(0.0, 0.0)
+        lateinit var singleton: SimModel
         /**
          * All vehicles default, have same size, default world objects.
          */
@@ -56,12 +58,17 @@ class SimModel(
                     objectSize
                 )
             )
-            return SimModel(
+            singleton = SimModel(
                 worldWidth,
                 worldHeight,
                 startWorldObjects,
                 vehicles
             )
+            return singleton
+        }
+
+        operator fun getValue(geneticAlgorithm: GeneticAlgorithm, property: KProperty<*>): SimModel {
+            return singleton
         }
     }
 }

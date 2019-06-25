@@ -1,8 +1,9 @@
-package agent
+package agent.brain
 
 import DoubleVector
 import Matrix
 import bytes
+import generateNormalizedSequence
 import sum
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
@@ -150,6 +151,19 @@ open class Network(
                 }
             }
             return Network(innerNeurons.toSet(), inputNeurons, outputNeurons, connections.toSet())
+        }
+
+        fun generateRandomOfSize(brainSize: Int): Network {
+            var adjMatrix = Matrix<Double>(brainSize, brainSize)
+            for (i in 0 until brainSize) { // walk "from" columns
+                val thisNodeWeights = generateNormalizedSequence(size = brainSize - i)
+                val it = thisNodeWeights.iterator()
+                for (j in i until brainSize) {
+                    val el = it.next()
+                    adjMatrix[i, j] = el
+                }
+            }
+            return fromAdjMatrix(adjMatrix)
         }
 
     }

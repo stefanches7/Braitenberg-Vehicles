@@ -2,6 +2,7 @@ package agent
 
 import Dot
 import DoubleVector
+import agent.brain.Network
 import angleToXAxis
 import check
 import degrees
@@ -20,7 +21,8 @@ class Vehicle(
     val body: Body,
     val motors: Array<Motor>,
     val sensors: Array<Sensor>,
-    var speed: DoubleVector
+    var speed: DoubleVector,
+    var brain: Network
 ) {
     val bodyParts: MutableSet<BodyPart>
     var oldSpeed: DoubleVector = DoubleVector(0.0, 0.0) //used for rotation computation
@@ -121,7 +123,8 @@ class Vehicle(
             sensorMotorRadius: Double,
             sensorsDistance: Double,
             speedX: Double,
-            speedY: Double
+            speedY: Double,
+            brainSize: Int = 5
         ): Vehicle {
             check(sensorsDistance <= shortSide) {
                 throw IllegalArgumentException("Sensors distance should be shorter than side!")
@@ -152,12 +155,14 @@ class Vehicle(
                 centerOffset = DoubleVector(longSide / 2, sensorsDistance / 2),
                 bodyCenter = bodyCenter
             )
+            val brain = Network.generateRandomOfSize(brainSize)
 
             return Vehicle(
                 body,
                 arrayOf(motorLeft, motorRight),
                 arrayOf(sensorLeft, sensorRight),
-                DoubleVector(speedX, speedY)
+                DoubleVector(speedX, speedY),
+                brain
             )
         }
     }

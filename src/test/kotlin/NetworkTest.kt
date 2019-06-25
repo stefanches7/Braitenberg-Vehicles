@@ -1,4 +1,4 @@
-import agent.Network
+import agent.brain.Network
 import org.junit.jupiter.api.Test as test
 
 

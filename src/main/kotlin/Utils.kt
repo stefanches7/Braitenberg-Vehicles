@@ -2,6 +2,7 @@ import javafx.geometry.Bounds
 import tornadofx.*
 import java.nio.ByteBuffer
 import kotlin.math.*
+import kotlin.random.Random
 
 /**
  * This class is more for trying around, than bringing real value.
@@ -199,4 +200,16 @@ fun Double.bytes(): ByteArray =
     ByteBuffer.allocate(java.lang.Long.BYTES)
         .putLong(java.lang.Double.doubleToLongBits(this)).array()
 
-
+fun generateNormalizedSequence(
+    from: Double = 0.0,
+    to: Double = 1.0,
+    size: Int,
+    normalize: Boolean = true
+): Collection<Double> {
+    var out = mutableListOf<Double>()
+    for (i in 0 until size) {
+        out.add(Random.nextDouble(from, to))
+    }
+    if (normalize) out = out.map { it / out.sum() }.toMutableList()
+    return out
+}

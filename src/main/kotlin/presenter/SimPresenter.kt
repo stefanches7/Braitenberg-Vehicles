@@ -62,4 +62,12 @@ class SimPresenter() : Controller() {
         }
     }
 
+    /**
+     * Genetic algorithm update
+     * TODO block rendering to avoid concurrent accessing of elements.
+     */
+    fun nextEpoch() {
+        
+    }
+
 }
