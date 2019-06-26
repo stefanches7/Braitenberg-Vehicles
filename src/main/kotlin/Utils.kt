@@ -1,6 +1,7 @@
 import javafx.geometry.Bounds
 import tornadofx.*
 import java.nio.ByteBuffer
+import java.util.*
 import kotlin.math.*
 import kotlin.random.Random
 
@@ -57,7 +58,7 @@ class DoubleVector(vararg elements: Double) {
         val rotAngle: Double = if (theta.units == Dimension.AngularUnits.deg) theta.value * PI / 180 else theta.value
         val xTick = x * cos(rotAngle) - y * sin(rotAngle)
         val yTick = y * cos(rotAngle) + x * sin(rotAngle)
-        this.elements = DoubleArray(2) { arrayOf(xTick, yTick)[it] }
+        this.elements = doubleArrayOf(xTick, yTick)
     }
 
     operator fun plus(vector: DoubleVector): DoubleVector {
@@ -157,7 +158,7 @@ class Matrix<T>(val xSize: Int, val ySize: Int, val array: Array<Array<T>>) {
 
     companion object {
 
-        inline operator fun <reified T> invoke() = Matrix(0, 0, Array(0, { emptyArray<T>() }))
+        inline operator fun <reified T> invoke() = Matrix(0, 0, Array(0) { emptyArray<T>() })
 
         inline operator fun <reified T> invoke(xWidth: Int, yWidth: Int) =
             Matrix(xWidth, yWidth, Array(xWidth, { arrayOfNulls<T>(yWidth) }))
@@ -188,12 +189,18 @@ class Matrix<T>(val xSize: Int, val ySize: Int, val array: Array<Array<T>>) {
     }
 
     fun isUpperHalfFree(): Boolean {
-        for (i in 0..ySize) {
-            for (j in i..xSize)
-                if (this[i, j] != 0) return false
+        for (i in 0 until ySize) {
+            for (j in i until xSize)
+                if (this[j, i] != null) return false
         }
         return true
     }
+
+    override fun toString(): String {
+        return "Matrix: \n${array.map { Arrays.toString(it) }})"
+    }
+
+
 }
 
 fun Double.bytes(): ByteArray =
@@ -213,3 +220,4 @@ fun generateNormalizedSequence(
     if (normalize) out = out.map { it / out.sum() }.toMutableList()
     return out
 }
+

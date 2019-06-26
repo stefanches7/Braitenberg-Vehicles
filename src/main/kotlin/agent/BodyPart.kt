@@ -10,10 +10,8 @@ abstract class BodyPart(
 ) {
 
 
-    fun rotateAroundCenter(theta: Dimension<Dimension.AngularUnits>): DoubleVector {
-        val oldOffset = this.centerOffset.copy()
-        centerOffset.rotate(theta)
-        return oldOffset
+    fun rotateAroundCenter(angle: Dimension<Dimension.AngularUnits>) {
+        this.centerOffset.rotate(angle)
     }
 }
 
