@@ -58,7 +58,8 @@ class SimModel(
     private fun mateBrains(brain1: Network, brain2: Network): Vehicle {
         val b1 = brain1.toBinary()
         val b2 = brain2.toBinary()
-        val coPoint = Random.nextInt(kotlin.math.min(b1.length(), b2.length()))
+        check(b1.length() == b2.length()) { throw IllegalArgumentException("Only networks of same size are allowed to crossover!") }
+        val coPoint = Random.nextInt(b1.length())
         val possibleOffspring = arrayOf(b1[0, coPoint] + b2[coPoint], b2[0, coPoint] + b1[coPoint])
         val which = Random.nextInt(possibleOffspring.size)
         return Vehicle.randomSimpleVehicle(
@@ -106,8 +107,8 @@ class SimModel(
             effectMax: Double = 100.0
         ): SimModel {
             worldEnd = Dot(worldWidth, worldHeight)
-            val vehicles: MutableSet<Vehicle> = mutableSetOf()
-            for (i in 1..vehiclesCount.toInt()) {
+            val vehicles: MutableList<Vehicle> = mutableListOf()
+            for (i in 1..vehiclesCount) {
                 vehicles.add(
                     Vehicle.randomSimpleVehicle(worldWidth, worldHeight, vehicleLength, vehicleHeight, sensorsDistance)
                 )

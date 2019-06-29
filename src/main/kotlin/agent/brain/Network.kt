@@ -7,8 +7,6 @@ import generateNormalizedSequence
 import sum
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
-import kotlin.math.floor
-import kotlin.math.sqrt
 
 open class Network(
     val innerNeurons: Set<Neuron>,
@@ -61,30 +59,32 @@ open class Network(
         check(this.inputNeurons.size == this.outputNeurons.size && this.inputNeurons.size == 2) {
             throw Exception("Output and input layers should always be 2 neurons long!")
         }
-        val nodeCount = this.innerNeurons.size + Factory.COUNT_SURF_NEURONS * 2
-        val innerOrdered = innerNeurons.toTypedArray()
-        val adapter =
-            NeuronAdapter(
-                inputNeurons, innerNeurons.toTypedArray(), outputNeurons, nodeCount,
-                Factory.COUNT_SURF_NEURONS
-            )
+        val nodeCount = this.innerNeurons.size + Factory.SURF_NEURONS_COUNT * 2
+        val na = NeuronAdapter(
+            inputNeurons, innerNeurons.toTypedArray(), outputNeurons, nodeCount,
+            Factory.SURF_NEURONS_COUNT
+        )
+
         var representation = byteArrayOf()
         for (j in 0 until nodeCount) {
             for (i in 0 until j) {
-                if (connections.any { it.from == adapter[i] && it.to == adapter[j] }) {
+                if (connections.any { it.from == na[i] && it.to == na[j] }) {
                     val elBytes =
-                        connections.filter { it.from == adapter[i] && it.to == adapter[j] }[0].weight.bytes()
+                        connections.filter { it.from == na[i] && it.to == na[j] }[0].weight.bytes()
                     representation += elBytes
+                } else {
+                    representation += 0.0.bytes()
                 }
             }
         }
         //type conversions
+        null
         return BinaryRepresentation.valueOf(representation)
     }
 
     companion object Factory {
 
-        const val COUNT_SURF_NEURONS = 2
+        const val SURF_NEURONS_COUNT = 2
 
         /**
          * 1 hidden layer, 2*2d input and output.
@@ -106,16 +106,16 @@ open class Network(
          * Build network from the sequence of bits. In this version, weights are represented by 32bit
          */
         fun fromBinary(representation: BinaryRepresentation): Network {
-            check(representation.length() % 32 == 0) { throw Exception("Network positions should be represented by 32 bit chunks!") }
-            val nodeCount = sqrt(representation.length().toDouble())
-            check((nodeCount - floor(nodeCount)) == 0.0) { throw Exception("Bit representation length should be an integer square!") }
-            val adjMatrix = Matrix<Double>(nodeCount.toInt(), nodeCount.toInt())
+            println("Representation length: ${representation.length()}")
+            val nodeCount = representation.nodesSize()
+            val adjMatrix = Matrix<Double>(nodeCount, nodeCount)
 
-            for (j in 0 until nodeCount.toInt()) {
+            for (j in 1 until nodeCount) {
                 for (i in 0 until j) {
-                    val chStart = (i + j - 2)
-                    val el = ByteBuffer.wrap(representation[chStart, chStart + 32].toByteArray())
-                        .order(ByteOrder.LITTLE_ENDIAN).double
+                    val chunkPos = (j - 1) * j / 2 + i
+                    val el =
+                        ByteBuffer.wrap(representation[chunkPos * BinaryRepresentation.chunkSize, (chunkPos + 1) * BinaryRepresentation.chunkSize].toByteArray())
+                            .order(ByteOrder.LITTLE_ENDIAN).double
                     adjMatrix[i, j] = el
                 }
             }
@@ -139,9 +139,9 @@ open class Network(
                     innerNeurons.toTypedArray(),
                     outputNeurons,
                     matrix.xSize,
-                    COUNT_SURF_NEURONS
+                    SURF_NEURONS_COUNT
                 )
-            var connections = mutableListOf<Edge>()
+            val connections = mutableListOf<Edge>()
             for (i in 0 until matrix.xSize) {
                 for (j in i + 1 until matrix.ySize) {
                     if (matrix[i, j] != 0.0)
@@ -155,7 +155,7 @@ open class Network(
          * Generate circuit-free network with random normalized weights of a given length.
          */
         fun generateRandomOfSize(brainSize: Int): Network {
-            var adjMatrix = Matrix<Double>(brainSize, brainSize)
+            val adjMatrix = Matrix<Double>(brainSize, brainSize)
             for (i in 0 until brainSize) { // walk "from" columns
                 val thisNodeWeights = generateNormalizedSequence(size = brainSize - i)
                 val it = thisNodeWeights.iterator()

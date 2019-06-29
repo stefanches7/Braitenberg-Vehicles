@@ -67,7 +67,10 @@ class SimPresenter() : Controller() {
      * TODO block rendering to avoid concurrent accessing of elements.
      */
     fun nextEpoch() {
-        
+        paused = true
+        model.nextEpoch()
+        paused = !paused
+        fire(RenderReadyEvent())
     }
 
 }

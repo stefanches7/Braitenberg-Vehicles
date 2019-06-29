@@ -196,14 +196,15 @@ class Vehicle(
             vehicleLength: Double = Math.floor(worldWidth / 80),
             vehicleHeight: Double = Math.floor(worldHeight / 150),
             sensorsDistance: Double = vehicleHeight / 2.0,
-            brain: Network = null
+            brain: Network? = null
         ): Vehicle {
             return Vehicle.Factory.simpleVehicle(
                 Random.nextDouble(0.0, worldWidth),
                 Random.nextDouble(0.0, worldHeight),
                 vehicleHeight, vehicleLength, 1.0, sensorsDistance,
                 Random.nextDouble(-10.0, 10.0),
-                Random.nextDouble(-10.0, 10.0)
+                Random.nextDouble(-10.0, 10.0),
+                brain = brain
             )
 
         }
