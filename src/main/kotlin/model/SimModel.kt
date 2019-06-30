@@ -58,14 +58,12 @@ class SimModel(
     private fun mateBrains(brain1: Network, brain2: Network): Vehicle {
         val b1 = brain1.toBinary()
         val b2 = brain2.toBinary()
-        check(b1.length() == b2.length()) { throw IllegalArgumentException("Only networks of same size are allowed to crossover!") }
-        val coPoint = Random.nextInt(b1.length())
-        val possibleOffspring = arrayOf(b1[0, coPoint] + b2[coPoint], b2[0, coPoint] + b1[coPoint])
-        val which = Random.nextInt(possibleOffspring.size)
+        val coPoint = Random.nextInt(b1.length() * 8)
+        val childBrain = b1.crossover(b2, coPoint)
         return Vehicle.randomSimpleVehicle(
             worldHeight = worldHeight,
             worldWidth = worldWidth,
-            brain = Network.fromBinary(possibleOffspring[which])
+            brain = Network.fromBinary(childBrain)
         )
     }
 

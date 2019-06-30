@@ -221,3 +221,29 @@ fun generateNormalizedSequence(
     return out
 }
 
+@ExperimentalUnsignedTypes
+fun UByteArray.mapInPlace(transform: (UByte) -> UByte) {
+    for (i in this.indices) {
+        this[i] = transform(this[i])
+    }
+}
+
+fun Double.round(decimals: Int): Double {
+    var multiplier = 1.0
+    repeat(decimals) { multiplier *= 10 }
+    return round(this * multiplier) / multiplier
+}
+
+fun UByte.flip(bitIdx: Int): UByte {
+    check(bitIdx in 0..7) { throw Exception("UByte has only 8 bits!") }
+    var op = 1.toUByte()
+    op = op.toInt().shl(7 - bitIdx).toUByte()
+    return this.xor(op)
+}
+
+
+fun Int.pow(i: Int): Int {
+    var out = 1
+    for (j in 1..i) out *= i
+    return out
+}
