@@ -77,6 +77,11 @@ class DoubleVector(vararg elements: Double) {
     }
 
 
+    fun vecLength(): Double {
+        return sqrt(elements.map { it * it }.sum())
+    }
+
+
     operator fun unaryMinus() = run {
         var out = DoubleArray(this.elements.size)
         for (i in 0 until elements.size) {
@@ -244,6 +249,12 @@ fun UByte.flip(bitIdx: Int): UByte {
 
 fun Int.pow(i: Int): Int {
     var out = 1
-    for (j in 1..i) out *= i
+    for (j in 1..i) out *= j
     return out
+}
+
+fun <T> Array<T>.random(): T = this[Random.nextInt(this.size)]
+
+fun mean(vararg elements: Double): Double {
+    return (elements.sum() / elements.size)
 }

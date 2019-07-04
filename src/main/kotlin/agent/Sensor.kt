@@ -3,6 +3,7 @@ package agent
 import Dot
 import DoubleVector
 import check
+import javafx.scene.paint.Color
 import javafx.scene.shape.Circle
 import javafx.scene.shape.Shape
 import model.WorldObject
@@ -13,7 +14,8 @@ class Sensor(
     shape: Shape = Circle(
         bodyCenter.x + centerOffset.x,
         bodyCenter.y + centerOffset.y,
-        1.0
+        1.0,
+        Color.RED
     ),
     val polarity: Int
 ) : BodyPart(centerOffset = centerOffset, shape = shape) {

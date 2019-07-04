@@ -3,21 +3,22 @@ package model
 import Dot
 import agent.Vehicle
 import agent.brain.Network
+import mean
 import org.nield.kotlinstatistics.WeightedCoin
 import java.lang.Math.floor
 import kotlin.random.Random
 
 /**
- * Contains buisness logic of the world. Genetic algorithm is one-point crossover, elitarism and luck survival.
+ * Contains buisness logic of the world. Genetic algorithm part of the model is one-point crossover, elitarism and luck survival.
  */
 class SimModel(
     val worldWidth: Double,
     val worldHeight: Double,
     val objects: MutableSet<WorldObject>,
-    internal var vehicles: MutableList<Vehicle>,
+    var vehicles: MutableList<Vehicle>,
     mutationRate: Double = 0.05,
-    matingRate: Double = 0.8, /* how probable is it, that unique vehicle pair mates? */
-    val rateEliteSelected: Double = 0.8,
+    matingRate: Double = 0.05, /* how probable is it, that unique vehicle pair mates? */
+    val rateEliteSelected: Double = 0.1,
     rateLuckySelected: Double = 0.05
 ) {
 
@@ -26,11 +27,15 @@ class SimModel(
     val selectLuckyCoin = WeightedCoin(rateLuckySelected)
     var epochCount = 0
 
-    fun nextEpoch() {
+    /**
+     * Returns vehicles active after an epoch update.
+     */
+    fun nextEpoch(): Collection<Vehicle> {
         this.mutateBrains()
         this.crossoverBrains()
         this.selectVehicles()
         ++epochCount
+        return this.vehicles
     }
 
     private fun mutateBrains() {
@@ -58,7 +63,7 @@ class SimModel(
     private fun mateBrains(brain1: Network, brain2: Network): Vehicle {
         val b1 = brain1.toBinary()
         val b2 = brain2.toBinary()
-        val coPoint = Random.nextInt(b1.length() * 8)
+        val coPoint = Random.nextInt(b1.length())
         val childBrain = b1.crossover(b2, coPoint)
         return Vehicle.randomSimpleVehicle(
             worldHeight = worldHeight,
@@ -69,7 +74,7 @@ class SimModel(
 
     private fun selectVehicles() {
         val fitnessDecrVehicles =
-            fitness(this.vehicles).toList().sortedBy { (_, v) -> v }.toMap().keys.toList()
+            fitness(this.vehicles).toList().sortedBy { (_, v) -> v }.reversed().toMap().keys.toList()
         var died = mutableSetOf<Vehicle>()
         for (i in 0 until fitnessDecrVehicles.size) {
             if (i > fitnessDecrVehicles.size * rateEliteSelected && !selectLuckyCoin.flip()) died.add(
@@ -82,7 +87,7 @@ class SimModel(
     private fun fitness(individuals: Collection<Vehicle>): HashMap<Vehicle, Double> {
         val out = hashMapOf<Vehicle, Double>()
         individuals.forEach {
-            out.put(it, 0.0) //TODO implement
+            out.put(it, mean(it.speed.vecLength(), it.oldSpeed.vecLength()))
         }
         return out
     }

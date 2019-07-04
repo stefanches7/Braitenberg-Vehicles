@@ -3,8 +3,9 @@ package model
 import Dot
 import DoubleVector
 import angleToXAxis
+import javafx.scene.Group
 import javafx.scene.shape.Circle
-import javafx.scene.shape.Shape
+import view.WorldObjectGroup
 import kotlin.math.cos
 import kotlin.math.pow
 import kotlin.math.sin
@@ -15,7 +16,7 @@ import kotlin.random.Random
  */
 class WorldObject(
     val x: Double, val y: Double, val size: Double, val effectStrength: Double,
-    val shape: Shape = Circle(x, y, size)
+    val shape: Group = WorldObjectGroup(Circle(x, y, size))
 ) {
 
     /**

@@ -30,24 +30,30 @@ class BinaryRepresentation(val representation: UByteArray) {
         this.representation[which] = this.representation[which].flip(pos % 8)
     }
 
-    fun crossover(other: BinaryRepresentation, pos: Int = Random.nextInt(this.length() * 8)): BinaryRepresentation {
+    fun crossover(other: BinaryRepresentation, pos: Int = Random.nextInt(this.length())): BinaryRepresentation {
         check(other.length() == this.length()) { throw Exception("Can not crossover two different-length strings!") }
-        check(pos < this.length()) { throw Exception("Trying to crossover out of bounds!") }
-        val e1 = this[pos / 8]
-        val e2 = other[pos / 8]
-        val oursFirstCP: UByte = (e1.div(2.pow(7 - pos % 8).toUByte()) + e2.rem(2.pow(7 - pos % 8).toUByte())).toUByte()
+        check(pos < this.length()) { throw Exception("Trying to crossover out of bounds! Requested position was: $pos") }
+        val elNumber = pos / elSize
+        val e1 = this[elNumber]
+        val e2 = other[elNumber]
+
+        val crosspoint = elSize - 1 - pos % elSize
+        val oursFirstCP: UByte = (e1.div(2.pow(crosspoint).toUByte()) + e2.rem(2.pow(crosspoint).toUByte())).toUByte()
         val theirFirstCP: UByte =
-            (e2.div(2.pow(7 - pos % 8).toUByte()) + e1.rem(2.pow(7 - pos % 8).toUByte())).toUByte()
-        val oursFirst: UByteArray = (this[0, pos / 8 - 1] + oursFirstCP) + other[pos / 8 + 1, this.length()]
-        val theirFirst: UByteArray = other[0, pos / 8 - 1] + theirFirstCP + this[pos / 8 + 1, this.length()]
+            (e2.div(2.pow(crosspoint).toUByte()) + e1.rem(2.pow(crosspoint).toUByte())).toUByte()
+        val oursFirst: UByteArray =
+            (this[0, elNumber - 1] + oursFirstCP) + other[elNumber + 1, this.length() / elSize - 1]
+        val theirFirst: UByteArray =
+            other[0, elNumber - 1] + theirFirstCP + this[elNumber + 1, this.length() / elSize - 1]
         val childrenVariants = arrayOf(
             oursFirst, theirFirst
         )
-        return BinaryRepresentation(childrenVariants[Random.nextInt(childrenVariants.size)])
+        return BinaryRepresentation(childrenVariants.random())
     }
 
+
     fun length(): Int {
-        return representation.size
+        return representation.size * 8
     }
 
     fun toByteArray(): UByteArray {
@@ -58,10 +64,16 @@ class BinaryRepresentation(val representation: UByteArray) {
      * Tells how many nodes there are in network based on
      */
     fun nodesSize(): Int {
-        val chunksCount = this.length()
         val nodesCount =
-            (0.5 + sqrt((1 + 8 * chunksCount).toDouble()) / 2).roundToInt() //2nd degree polynomial n^2 - n - 2c = 0 solution
+            (0.5 + sqrt((1 + this.length()).toDouble()) / 2).roundToInt() //2nd degree polynomial n^2 - n - 2c = 0 solution
         return nodesCount
+    }
+
+    companion object {
+        /**
+         * Size of a representation of one element in a matrix.
+         */
+        const val elSize = 8
     }
 
 }

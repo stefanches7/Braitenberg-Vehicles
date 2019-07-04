@@ -108,7 +108,6 @@ open class Network(
          * Build network from the sequence of bits. In this version, weights are represented by 32bit
          */
         fun fromBinary(representation: BinaryRepresentation): Network {
-            println("Representation length: ${representation.length()}")
             val nodeCount = representation.nodesSize()
             val adjMatrix = Matrix<Double>(nodeCount, nodeCount)
 
@@ -164,7 +163,6 @@ open class Network(
                     adjMatrix[i, j] = el
                 }
             }
-            println("Generated network: $adjMatrix")
             return fromAdjMatrix(adjMatrix)
         }
 
