@@ -4,6 +4,7 @@ import agent.Vehicle
 import javafx.animation.Timeline
 import javafx.event.EventHandler
 import model.SimModel
+import model.WorldObject
 import tornadofx.*
 import view.SimView
 import kotlin.math.ceil
@@ -31,6 +32,8 @@ class SimPresenter : Controller() {
         worldWidth: Double,
         worldHeight: Double,
         vehiclesCount: Int,
+        effectMin: Double = 10.0,
+        effectMax: Double = 50.0,
         view: SimView,
         frameRate: Byte
     ) {
@@ -38,11 +41,10 @@ class SimPresenter : Controller() {
         interval = ceil(1000F / frameRate).toInt()
         model =
             SimModel.Factory.defaultModel(
-                worldWidth, worldHeight, vehicleHeight = 20.0, vehicleLength = 40.0, effectMin = 10.0,
-                effectMax = 50.0, worldObjectCount = 10, vehiclesCount = vehiclesCount
+                worldWidth, worldHeight, effectMin = effectMin,
+                effectMax = effectMax, worldObjectCount = 10, vehiclesCount = vehiclesCount
             )
-        this.view.renderWorld(model)
-        updateRender()
+        fire(UpdateRenderEvent())
     }
 
     /**
@@ -50,20 +52,20 @@ class SimPresenter : Controller() {
      */
     fun updateRender() {
         if (running) {
-            val timeline = thisTickAnimationTimeline()
+            val timeline = thisTickAnimation()
             timeline.onFinished = EventHandler {
                 if (gaUpdateQueued) {
                     model.nextEpoch()
                     gaUpdateQueued = false
-                    fire(ModifyRenderedEvent())
+                    fire(UpdateRenderEvent())
                 } else renderReady()
             }
             timeline.play()
         }
     }
 
-    fun thisTickAnimationTimeline(): Timeline {
-        val vehicles = model.vehicles
+    fun thisTickAnimation(): Timeline {
+        val vehicles = getCurrentVehicles()
         return timeline {
             keyframe(interval.millis) {
                 vehicles.forEach {
@@ -81,9 +83,12 @@ class SimPresenter : Controller() {
         return model.vehicles
     }
 
+    fun getCurrentWorldObjects(): MutableSet<WorldObject> {
+        return model.objects
+    }
+
     /**
      * Queues genetic algorithm update and waits until it finishes. Returns outselected vehicles.
-     * TODO block rendering to avoid concurrent accessing of elements.
      */
     fun queueEpochUpdate() {
         pause()

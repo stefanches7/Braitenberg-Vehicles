@@ -6,9 +6,9 @@ import javafx.scene.input.KeyEvent
 import javafx.scene.layout.AnchorPane
 import model.SimModel
 import model.WorldObject
-import presenter.ModifyRenderedEvent
 import presenter.RenderReadyEvent
 import presenter.SimPresenter
+import presenter.UpdateRenderEvent
 import tornadofx.*
 import kotlin.system.exitProcess
 
@@ -16,13 +16,6 @@ class SimView : View() {
     val presenter: SimPresenter = SimPresenter()
     val canvas: AnchorPane
     val frameRate = 10
-
-    init {
-        subscribe<ModifyRenderedEvent> {
-            renderVehicles(presenter.getCurrentVehicles())
-            presenter.renderReady()
-        }
-    }
 
     override val root = vbox {
         anchorpane {}
@@ -32,6 +25,27 @@ class SimView : View() {
             }
         }
     }
+
+
+    init {
+        val (worldWidth, worldHeight, startingVehicles) = arrayOf(800.0, 800.0, 10.0)
+        canvas = root.children.filtered { it is AnchorPane }[0] as AnchorPane
+        runAsync {
+            presenter.startSimulation(
+                worldWidth,
+                worldHeight,
+                startingVehicles.toInt(),
+                view = find(SimView::class),
+                frameRate = frameRate.toByte()
+            )
+        } ui { }
+        subscribe<UpdateRenderEvent> {
+            if (!canvas.getChildList()!!.any { it is WorldObjectGroup }) renderWorldObjects(presenter.getCurrentWorldObjects())
+            renderVehicles(presenter.getCurrentVehicles())
+            fire(RenderReadyEvent())
+        }
+    }
+
 
     fun processInput(code: KeyCode) {
         when (code) {
@@ -50,20 +64,6 @@ class SimView : View() {
             }
             else -> Unit
         }
-    }
-
-    init {
-        val (worldWidth, worldHeight, startingVehicles) = arrayOf(1000.0, 1000.0, 100.0)
-        canvas = root.children.filtered { it is AnchorPane }[0] as AnchorPane
-        runAsync {
-            presenter.startSimulation(
-                worldWidth,
-                worldHeight,
-                startingVehicles.toInt(),
-                find(SimView::class),
-                frameRate.toByte()
-            )
-        } ui { }
     }
 
     fun renderWorld(model: SimModel) {

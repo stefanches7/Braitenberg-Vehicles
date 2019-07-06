@@ -24,7 +24,9 @@ class WorldObject(
      */
     fun effectOnDistance(toX: Double, toY: Double): DoubleVector {
         val G = 10
-        val rSquare = (toX - this.x).pow(2) + (toY - this.y).pow(2)
+        var rSquare = (toX - this.x).pow(2) + (toY - this.y).pow(2)
+        if (rSquare == 0.0)
+            rSquare = 0.0001
         val F = G * this.effectStrength * 100 / (rSquare)
         val alpha = angleToXAxis(
             Dot(x, y), Dot(toX, toY)

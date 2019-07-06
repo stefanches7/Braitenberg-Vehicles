@@ -45,11 +45,11 @@ class Vehicle(
     fun updateSpeed(affectors: Collection<WorldObject>) {
         // save for angle computation
         this.oldSpeed = this.speed.copy()
-        this.speed += this.environmentSpeedDelta(affectors)
-        repulseFromWalls()
+        this.speed = this.perceptEffects(affectors)
+        //repulseFromWalls()
     }
 
-    private fun environmentSpeedDelta(affectors: Collection<WorldObject>): DoubleVector {
+    private fun perceptEffects(affectors: Collection<WorldObject>): DoubleVector {
         val sensorInput = this.sensors.map { it.percept(affectors) }
         val motorOutput = this.brain.propagate(sensorInput.toTypedArray())
         return motorOutput.sum()
@@ -69,7 +69,13 @@ class Vehicle(
         if (aspiredX > SimModel.worldEnd.x) this.speed.x = (SimModel.worldEnd.x - this.getX()) * 0.9
         if (aspiredY > SimModel.worldEnd.y) this.speed.y = (SimModel.worldEnd.y - this.getY()) * 0.9
         // TODO half-Morse potential?
-        this.speed.x += abs(log10(fromLeft)) - abs(log10(fromRight)) // add in the positive x, substract in negative (fromRight
+        val (fromLeftAbs, fromRightAbs, fromUpAbs, fromDownAbs) = arrayOf(
+            abs(fromLeft),
+            abs(fromRight),
+            abs(fromUp),
+            abs(fromDown)
+        )
+        this.speed.x += abs(log10(fromLeftAbs)) - abs(log10(fromRightAbs)) // add in the positive x, substract in negative (fromRight
         this.speed.y += abs(log10(fromUp)) - abs(log10(fromDown))
     }
 
@@ -78,9 +84,11 @@ class Vehicle(
      */
     fun rotationAngle(): Double {
         // Delta of the angles of old and current speed vector
-        return this.getAngle() - angleToXAxis(
+        val angleNow = this.getAngle()
+        val anglePrev = angleToXAxis(
             Dot(this.oldSpeed.x, this.oldSpeed.y)
         )
+        return angleNow - anglePrev
     }
 
 
@@ -103,8 +111,8 @@ class Vehicle(
 
     private fun moveBody(): Collection<KeyValue> {
         val out: MutableSet<KeyValue> = mutableSetOf()
-        out.add(KeyValue(body.shape.translateXProperty(), this.speed.x))
-        out.add(KeyValue(body.shape.translateYProperty(), this.speed.y))
+        out.add(KeyValue(body.shape.layoutXProperty(), this.getX() + this.speed.x))
+        out.add(KeyValue(body.shape.layoutYProperty(), this.getY() + this.speed.y))
         return out
     }
 
@@ -117,12 +125,13 @@ class Vehicle(
         val out: MutableSet<KeyValue> = mutableSetOf()
         val transform = { bp: BodyPart ->
             val oldBPOffset = bp.centerOffset.copy()
-            bp.rotateAroundCenter(this.rotationAngle().rad)
+            val rotAngle = this.rotationAngle()
+            bp.rotateAroundCenter(rotAngle.rad)
             // bp center offset is already angle updated
-            val shiftX = sum(this.speed.x, -oldBPOffset.x, bp.centerOffset.x) //+radius
-            val shiftY = sum(this.speed.y, -oldBPOffset.y, bp.centerOffset.y)
-            out.add(KeyValue(bp.shape.translateXProperty(), shiftX))
-            out.add(KeyValue(bp.shape.translateYProperty(), shiftY))
+            val newX = bp.getX() - oldBPOffset.x + bp.centerOffset.x + this.speed.x
+            val newY = bp.getY() - oldBPOffset.y + bp.centerOffset.y + this.speed.y
+            out.add(KeyValue(bp.getXProperty(), newX))
+            out.add(KeyValue(bp.getYProperty(), newY))
         }
         this.sensors.forEach {
             transform(it)
@@ -168,7 +177,7 @@ class Vehicle(
             val sensorLeft = Sensor(
                 centerOffset = DoubleVector(-longSide / 2, sensorsDistance / 2),
                 bodyCenter = bodyCenter,
-                polarity = -1
+                polarity = 1
             )
             val motorRight = Motor(
                 centerOffset = DoubleVector(longSide / 2, -sensorsDistance / 2),

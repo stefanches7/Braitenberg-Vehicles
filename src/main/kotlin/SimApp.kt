@@ -11,8 +11,8 @@ fun main(args: Array<String>) {
 class Styles : Stylesheet() {
     init {
         root {
-            minWidth = 400.px
-            minHeight = 200.px
+            minWidth = 800.px
+            minHeight = 800.px
         }
     }
 }

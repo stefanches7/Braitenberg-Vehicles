@@ -23,7 +23,6 @@ inline fun check(value: Boolean, lazyMessage: () -> Any): Unit {
     }
 }
 
-// TODO FIX wrong angle calculation!
 fun angleToXAxis(l1d1: Dot, l1d2: Dot = Dot(0.0, 0.0)): Double {
     val alpha = atan2((l1d2.y - l1d1.y), (l1d2.x - l1d1.x)) //radian = slope
     return (if (alpha > 0.0) alpha else alpha + 2 * PI)
