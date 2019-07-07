@@ -7,14 +7,15 @@ import angleToXAxis
 import check
 import degrees
 import javafx.animation.KeyValue
+import javafx.scene.Node
 import javafx.scene.paint.Color
 import javafx.scene.shape.Rectangle
 import model.SimModel
 import model.WorldObject
 import sum
 import tornadofx.*
+import view.VehicleGroup
 import kotlin.math.abs
-import kotlin.math.log10
 import kotlin.random.Random
 
 class Vehicle(
@@ -24,15 +25,9 @@ class Vehicle(
     var speed: DoubleVector,
     var brain: Network
 ) {
-    val bodyParts: MutableSet<BodyPart>
+    val render = VehicleGroup(sensors.map { it.shape } + motors.map { it.shape } + listOf<Node>(body.shape))
+    val model: SimModel by SimModel
     var oldSpeed: DoubleVector = DoubleVector(0.0, 0.0) //used for rotation computation
-
-
-    init {
-        bodyParts = mutableSetOf(body)
-        bodyParts.addAll(motors)
-        bodyParts.addAll(sensors)
-    }
 
     fun getAngle() = angleToXAxis(Dot(this.speed.x, this.speed.y))
     fun getX() = this.body.shape.layoutX
@@ -46,38 +41,51 @@ class Vehicle(
         // save for angle computation
         this.oldSpeed = this.speed.copy()
         this.speed = this.perceptEffects(affectors)
-        //repulseFromWalls()
     }
 
     private fun perceptEffects(affectors: Collection<WorldObject>): DoubleVector {
         val sensorInput = this.sensors.map { it.percept(affectors) }
         val motorOutput = this.brain.propagate(sensorInput.toTypedArray())
-        return motorOutput.sum()
+        val pureSpeed = motorOutput.sum()
+        val adjustedSpeed = repulseFromWalls(pureSpeed)
+        return adjustedSpeed
     }
 
     /**
      * Repulses vehicle off the wall, when it is close
      */
-    private fun repulseFromWalls() {
-        val aspiredX = this.getX() + this.speed.x
-        val aspiredY = this.getY() + this.speed.y
-
-        val (fromLeft, fromUp) = arrayOf(this.getX(), this.getY())
-        if (fromLeft == 0.0) return //just initialized
-        val (fromRight, fromDown) = arrayOf(abs(SimModel.worldEnd.x - fromLeft), abs(SimModel.worldEnd.y - fromUp))
+    private fun repulseFromWalls(speed: DoubleVector): DoubleVector {
+        val (fromLeft, fromUp) = arrayOf(abs(this.getX()), abs(this.getY()))
+        if (fromLeft == 0.0 || fromUp == 0.0) return speed//just initialized
+        val (fromRight, fromDown) = arrayOf(abs(model.worldEnd.x - fromLeft), abs(model.worldEnd.y - fromUp))
         // truncate speed vectors to out of bounds
-        if (aspiredX > SimModel.worldEnd.x) this.speed.x = (SimModel.worldEnd.x - this.getX()) * 0.9
-        if (aspiredY > SimModel.worldEnd.y) this.speed.y = (SimModel.worldEnd.y - this.getY()) * 0.9
-        // TODO half-Morse potential?
-        val (fromLeftAbs, fromRightAbs, fromUpAbs, fromDownAbs) = arrayOf(
-            abs(fromLeft),
-            abs(fromRight),
-            abs(fromUp),
-            abs(fromDown)
+        val out = adjustSpeedInLimits(speed, arrayOf(fromLeft, fromUp, fromRight, fromDown))
+        val c = 100.0
+        val adjustedSpeed = DoubleVector(
+            out.x + repulseFun(fromLeft, c) - repulseFun(fromRight, c),
+            out.y + repulseFun(fromUp, c) - repulseFun(fromDown, c)
         )
-        this.speed.x += abs(log10(fromLeftAbs)) - abs(log10(fromRightAbs)) // add in the positive x, substract in negative (fromRight
-        this.speed.y += abs(log10(fromUp)) - abs(log10(fromDown))
+        return adjustedSpeed
     }
+
+    private fun adjustSpeedInLimits(speed: DoubleVector, distances: Array<Double>): DoubleVector {
+        val out = speed
+        val (fromLeft, fromUp, fromRight, fromDown) = distances
+        if (fromLeft + speed.x > model.worldEnd.x) out.x = (model.worldEnd.x - fromLeft) * 0.9
+        else if (fromRight + speed.x < 0) out.x = (fromRight - 0) * 0.9
+        if (fromUp + speed.y > model.worldEnd.y) out.y = (model.worldEnd.y - fromUp) * 0.9
+        else if (fromDown + speed.y < 0) out.x = (fromDown - 0) * 0.9
+        return out
+    }
+
+    /**
+     * c is "repulse closer than points" parameter
+     */
+    fun repulseFun(distance: Double, c: Double): Double {
+        if (abs(distance) > c) return 0.0
+        else return abs(1 / abs(distance / c))
+    }
+
 
     /**
      * Next rotation angle, given in radians.

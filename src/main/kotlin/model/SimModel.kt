@@ -1,12 +1,13 @@
 package model
 
-import Dot
+import DoubleVector
 import agent.Vehicle
 import agent.brain.Network
 import mean
 import org.nield.kotlinstatistics.WeightedCoin
 import java.lang.Math.floor
 import kotlin.random.Random
+import kotlin.reflect.KProperty
 
 /**
  * Contains buisness logic of the world. Genetic algorithm part of the model is one-point crossover, elitarism and luck survival.
@@ -21,7 +22,7 @@ class SimModel(
     val rateEliteSelected: Double = 0.1,
     rateLuckySelected: Double = 0.05
 ) {
-
+    val worldEnd = DoubleVector(worldWidth, worldHeight)
     val mutationCoin = WeightedCoin(mutationRate)
     val matingCoin = WeightedCoin(matingRate)
     val selectLuckyCoin = WeightedCoin(rateLuckySelected)
@@ -94,7 +95,7 @@ class SimModel(
 
 
     companion object Factory {
-        var worldEnd = Dot(0.0, 0.0)
+        var singleton: SimModel? = null
         /**
          * All vehicles default, have same length, default world objects.
          */
@@ -109,7 +110,7 @@ class SimModel(
             effectMin: Double = 10.0,
             effectMax: Double = 100.0
         ): SimModel {
-            worldEnd = Dot(worldWidth, worldHeight)
+            if (singleton != null) return singleton!!
             val vehicles: MutableList<Vehicle> = mutableListOf()
             for (i in 1..vehiclesCount) {
                 vehicles.add(
@@ -129,12 +130,17 @@ class SimModel(
                     objectSize
                 )
             )
-            return SimModel(
+            singleton = SimModel(
                 worldWidth,
                 worldHeight,
                 startWorldObjects,
                 vehicles
             )
+            return singleton!!
+        }
+
+        operator fun getValue(vehicle: Vehicle, property: KProperty<*>): SimModel {
+            return singleton!!
         }
     }
 }

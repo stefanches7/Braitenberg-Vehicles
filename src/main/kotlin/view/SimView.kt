@@ -4,9 +4,8 @@ import agent.Vehicle
 import javafx.scene.input.KeyCode
 import javafx.scene.input.KeyEvent
 import javafx.scene.layout.AnchorPane
-import model.SimModel
+import javafx.scene.shape.Line
 import model.WorldObject
-import presenter.RenderReadyEvent
 import presenter.SimPresenter
 import presenter.UpdateRenderEvent
 import tornadofx.*
@@ -28,8 +27,12 @@ class SimView : View() {
 
 
     init {
-        val (worldWidth, worldHeight, startingVehicles) = arrayOf(800.0, 800.0, 10.0)
+        val (worldWidth, worldHeight, startingVehicles) = arrayOf(800.0, 800.0, 100.0)
         canvas = root.children.filtered { it is AnchorPane }[0] as AnchorPane
+        with(canvas) {
+            this += Line(worldWidth, 0.0, worldWidth, worldHeight)
+            this += Line(0.0, worldHeight, worldWidth, worldHeight)
+        }
         runAsync {
             presenter.startSimulation(
                 worldWidth,
@@ -42,7 +45,7 @@ class SimView : View() {
         subscribe<UpdateRenderEvent> {
             if (!canvas.getChildList()!!.any { it is WorldObjectGroup }) renderWorldObjects(presenter.getCurrentWorldObjects())
             renderVehicles(presenter.getCurrentVehicles())
-            fire(RenderReadyEvent())
+            presenter.renderReady()
         }
     }
 
@@ -54,7 +57,7 @@ class SimView : View() {
                 exitProcess(0)
             }
             KeyCode.SPACE -> {
-                if (presenter.paused) fire(RenderReadyEvent())
+                if (presenter.paused) presenter.renderReady()
                 else presenter.pause()
             }
             in arrayOf(KeyCode.RIGHT, KeyCode.KP_RIGHT) -> {
@@ -66,23 +69,16 @@ class SimView : View() {
         }
     }
 
-    fun renderWorld(model: SimModel) {
-        renderVehicles(model.vehicles)
-        renderWorldObjects(model.objects)
-    }
-
     /**
      * Adds vehicles shapes to the simulation.
      */
     fun renderVehicles(
         vehicles: Collection<Vehicle>
     ) {
-        this.canvas.getChildList()?.removeIf { it !is WorldObjectGroup }
+        this.canvas.getChildList()?.removeIf { it is VehicleGroup }
         vehicles.forEach {
             with(canvas) {
-                it.bodyParts.forEach { bp ->
-                    this += bp.shape
-                }
+                this += it.render
             }
         }
     }
@@ -92,9 +88,5 @@ class SimView : View() {
         with(canvas) {
             this += it.shape
         }
-    }
-
-    companion object {
-        val renderLock = Any()
     }
 }
