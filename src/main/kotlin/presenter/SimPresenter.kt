@@ -1,21 +1,26 @@
 package presenter
 
 import agent.Vehicle
+import config.SimConfig
 import javafx.animation.Timeline
 import javafx.event.EventHandler
 import model.SimModel
 import model.WorldObject
 import tornadofx.*
 import view.SimView
+import view.WelcomeScreen
 import kotlin.math.ceil
 
-class SimPresenter : Controller() {
-    private var gaUpdateQueued = false
-    lateinit var model: SimModel
+class SimPresenter() : Controller() {
+    lateinit var conf: SimConfig
     lateinit var view: SimView
+    lateinit var model: SimModel
+    val configView: WelcomeScreen by inject()
     var running = true
     var paused = false
     var interval: Int = 0
+
+    private var gaUpdateQueued = false
 
     init {
         subscribe<RenderReadyEvent> {
@@ -28,23 +33,30 @@ class SimPresenter : Controller() {
     /**
      * Create world, starting vehicles & launch the rendering process.
      */
-    fun startSimulation(
-        worldWidth: Double,
-        worldHeight: Double,
-        vehiclesCount: Int,
-        effectMin: Double = 10.0,
-        effectMax: Double = 50.0,
-        view: SimView,
-        frameRate: Byte
-    ) {
-        this.view = view
-        interval = ceil(1000F / frameRate).toInt()
+    fun startSimulation(conf: SimConfig) {
+        this.conf = conf
+        interval = ceil(1000F / conf.fps).toInt()
         model =
-            SimModel.Factory.defaultModel(
-                worldWidth, worldHeight, effectMin = effectMin,
-                effectMax = effectMax, worldObjectCount = 10, vehiclesCount = vehiclesCount
+            SimModel.Factory.instance(
+                conf.worldWidth.toDouble(),
+                conf.worldLength.toDouble(),
+                effectMin = conf.minObjectEffect.toDouble(),
+                effectMax = conf.maxObjectEffect.toDouble(),
+                worldObjectCount = conf.objectCount.toInt(),
+                startingVehicles = conf.startingAgents.toInt(),
+                vehicleLength = conf.vehicleLength.toDouble(),
+                vehicleHeight = conf.vehicleWidth.toDouble(),
+                sensorsDistance = conf.sensorsDistance.toDouble(),
+                brainSize = conf.brainSize.toInt(),
+                rateLuckySelected = conf.rateLuckySelected.toDouble(),
+                rateEliteSelected = conf.rateEliteSelected.toDouble(),
+                matingRate = conf.matingRate.toDouble(),
+                mutationRate = conf.mutationRate.toDouble(),
+                presenter = this
             )
-        fire(UpdateRenderEvent())
+        view = SimView(this, conf.worldWidth.toDouble(), conf.worldLength.toDouble())
+        configView.replaceWith(SimView::class)
+        fire(UpdateRenderEvent()) //tells view to render model
     }
 
     /**

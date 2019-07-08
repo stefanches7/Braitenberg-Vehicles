@@ -5,7 +5,7 @@ import agent.Vehicle
 import agent.brain.Network
 import mean
 import org.nield.kotlinstatistics.WeightedCoin
-import java.lang.Math.floor
+import presenter.SimPresenter
 import kotlin.random.Random
 import kotlin.reflect.KProperty
 
@@ -17,10 +17,11 @@ class SimModel(
     val worldHeight: Double,
     val objects: MutableSet<WorldObject>,
     var vehicles: MutableList<Vehicle>,
-    mutationRate: Double = 0.05,
-    matingRate: Double = 0.05, /* how probable is it, that unique vehicle pair mates? */
-    val rateEliteSelected: Double = 0.1,
-    rateLuckySelected: Double = 0.05
+    mutationRate: Double,
+    matingRate: Double, /* how probable is it, that unique vehicle pair mates? */
+    val rateEliteSelected: Double,
+    rateLuckySelected: Double,
+    val presenter: SimPresenter
 ) {
     val worldEnd = DoubleVector(worldWidth, worldHeight)
     val mutationCoin = WeightedCoin(mutationRate)
@@ -69,7 +70,10 @@ class SimModel(
         return Vehicle.randomSimpleVehicle(
             worldHeight = worldHeight,
             worldWidth = worldWidth,
-            brain = Network.fromBinary(childBrain)
+            brain = Network.fromBinary(childBrain),
+            sensorsDistance = presenter.conf.sensorsDistance.toDouble(),
+            vehicleHeight = presenter.conf.vehicleWidth.toDouble(),
+            vehicleLength = presenter.conf.vehicleLength.toDouble()
         )
     }
 
@@ -99,22 +103,35 @@ class SimModel(
         /**
          * All vehicles default, have same length, default world objects.
          */
-        fun defaultModel(
-            worldWidth: Double = 800.00,
-            worldHeight: Double = 600.0,
-            vehiclesCount: Int = 10,
-            vehicleLength: Double = floor(worldWidth / 60),
-            vehicleHeight: Double = floor(worldHeight / 120),
-            worldObjectCount: Int = 5,
-            sensorsDistance: Double = vehicleHeight / 2.0,
-            effectMin: Double = 10.0,
-            effectMax: Double = 100.0
+        fun instance(
+            worldWidth: Double,
+            worldHeight: Double,
+            startingVehicles: Int,
+            vehicleLength: Double,
+            vehicleHeight: Double,
+            worldObjectCount: Int,
+            sensorsDistance: Double,
+            effectMin: Double,
+            effectMax: Double,
+            brainSize: Int,
+            mutationRate: Double,
+            matingRate: Double, /* how probable is it, that unique vehicle pair mates? */
+            rateEliteSelected: Double,
+            rateLuckySelected: Double,
+            presenter: SimPresenter
         ): SimModel {
             if (singleton != null) return singleton!!
             val vehicles: MutableList<Vehicle> = mutableListOf()
-            for (i in 1..vehiclesCount) {
+            for (i in 1..startingVehicles) {
                 vehicles.add(
-                    Vehicle.randomSimpleVehicle(worldWidth, worldHeight, vehicleLength, vehicleHeight, sensorsDistance)
+                    Vehicle.randomSimpleVehicle(
+                        worldWidth,
+                        worldHeight,
+                        vehicleLength,
+                        vehicleHeight,
+                        sensorsDistance,
+                        brainSize
+                    )
                 )
 
             }
@@ -134,7 +151,12 @@ class SimModel(
                 worldWidth,
                 worldHeight,
                 startWorldObjects,
-                vehicles
+                vehicles,
+                mutationRate,
+                matingRate,
+                rateEliteSelected = rateEliteSelected,
+                rateLuckySelected = rateLuckySelected,
+                presenter = presenter
             )
             return singleton!!
         }

@@ -11,10 +11,8 @@ import presenter.UpdateRenderEvent
 import tornadofx.*
 import kotlin.system.exitProcess
 
-class SimView : View() {
-    val presenter: SimPresenter = SimPresenter()
+class SimView(val presenter: SimPresenter, worldWidth: Double, worldHeight: Double) : View() {
     val canvas: AnchorPane
-    val frameRate = 10
 
     override val root = vbox {
         anchorpane {}
@@ -25,23 +23,13 @@ class SimView : View() {
         }
     }
 
-
     init {
-        val (worldWidth, worldHeight, startingVehicles) = arrayOf(800.0, 800.0, 100.0)
         canvas = root.children.filtered { it is AnchorPane }[0] as AnchorPane
         with(canvas) {
+            //world boundaries
             this += Line(worldWidth, 0.0, worldWidth, worldHeight)
             this += Line(0.0, worldHeight, worldWidth, worldHeight)
         }
-        runAsync {
-            presenter.startSimulation(
-                worldWidth,
-                worldHeight,
-                startingVehicles.toInt(),
-                view = find(SimView::class),
-                frameRate = frameRate.toByte()
-            )
-        } ui { }
         subscribe<UpdateRenderEvent> {
             if (!canvas.getChildList()!!.any { it is WorldObjectGroup }) renderWorldObjects(presenter.getCurrentWorldObjects())
             renderVehicles(presenter.getCurrentVehicles())

@@ -163,8 +163,8 @@ class Vehicle(
             sensorsDistance: Double,
             speedX: Double,
             speedY: Double,
-            brain: Network? = null,
-            brainSize: Int = 5
+            brainSize: Int = 5,
+            brain: Network? = null
         ): Vehicle {
             check(sensorsDistance <= shortSide) {
                 throw IllegalArgumentException("Sensors distance should be shorter than side!")
@@ -210,9 +210,10 @@ class Vehicle(
 
         fun randomSimpleVehicle(
             worldWidth: Double, worldHeight: Double,
-            vehicleLength: Double = Math.floor(worldWidth / 80),
-            vehicleHeight: Double = Math.floor(worldHeight / 150),
-            sensorsDistance: Double = vehicleHeight / 2.0,
+            vehicleLength: Double,
+            vehicleHeight: Double,
+            sensorsDistance: Double,
+            brainSize: Int = 5,
             brain: Network? = null
         ): Vehicle {
             return Vehicle.Factory.simpleVehicle(
@@ -221,7 +222,8 @@ class Vehicle(
                 vehicleHeight, vehicleLength, 1.0, sensorsDistance,
                 Random.nextDouble(-10.0, 10.0),
                 Random.nextDouble(-10.0, 10.0),
-                brain = brain
+                brainSize,
+                brain
             )
 
         }

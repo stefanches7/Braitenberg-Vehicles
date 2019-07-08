@@ -43,8 +43,8 @@ class WorldObject(
             size: Double
         ): WorldObject {
             return WorldObject(
-                Random.nextDouble(worldWidth),
-                Random.nextDouble(worldHeight),
+                Random.nextDouble(worldWidth - size),
+                Random.nextDouble(worldHeight - size),
                 size,
                 Random.nextDouble(effectMin, effectMax)
             )
