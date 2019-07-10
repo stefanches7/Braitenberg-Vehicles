@@ -44,7 +44,7 @@ class WelcomeScreen : View("Welcome to the GA Braitenberg vehicles simulation!")
                             max = 10000.0,
                             amountToStepBy = 10,
                             editable = true,
-                            property = model.worldlength
+                            property = model.worldHeight
                         )
                     }
                     field("World width") {
@@ -53,7 +53,7 @@ class WelcomeScreen : View("Welcome to the GA Braitenberg vehicles simulation!")
                             max = 10000.0,
                             amountToStepBy = 10,
                             editable = true,
-                            property = model.worldlength
+                            property = model.worldHeight
                         )
                     }
                 }
@@ -74,7 +74,7 @@ class WelcomeScreen : View("Welcome to the GA Braitenberg vehicles simulation!")
                     field("Object size") {
                         spinner(
                             min = 0.1,
-                            max = (model.worldlength.value as Double / 20.0),
+                            max = (model.worldHeight.value as Double / 20.0),
                             amountToStepBy = 0.1,
                             editable = true,
                             property = model.objectSize
@@ -85,15 +85,15 @@ class WelcomeScreen : View("Welcome to the GA Braitenberg vehicles simulation!")
                             min = 1.0,
                             amountToStepBy = 1.0,
                             editable = true,
-                            property = model.minimumObjectEffect
+                            property = model.minObjectEffect
                         )
                     }
                     field("Maximum effect") {
                         spinner(
-                            min = model.minimumObjectEffect.value.toDouble() + 1.0,
+                            min = model.minObjectEffect.value.toDouble() + 1.0,
                             amountToStepBy = 1.0,
                             editable = true,
-                            property = model.maximumObjectEffect
+                            property = model.maxObjectEffect
                         )
                     }
                     field("Object placement") {
@@ -109,7 +109,7 @@ class WelcomeScreen : View("Welcome to the GA Braitenberg vehicles simulation!")
                     field("Length (long side)") {
                         spinner(
                             min = 1.0,
-                            max = (model.worldlength.value as Double / 60.0),
+                            max = (model.worldHeight.value as Double / 5.0),
                             amountToStepBy = 0.1,
                             editable = true,
                             property = model.vehicleLength
@@ -118,7 +118,7 @@ class WelcomeScreen : View("Welcome to the GA Braitenberg vehicles simulation!")
                     field("Width (short side)") {
                         spinner(
                             min = 0.5,
-                            max = (model.worldlength.value as Double / 120.0),
+                            max = (model.worldHeight.value as Double / 10.0),
                             amountToStepBy = 0.1,
                             editable = true,
                             property = model.vehicleWidth
@@ -206,7 +206,7 @@ class WelcomeScreen : View("Welcome to the GA Braitenberg vehicles simulation!")
                 text("Start simulation")
                 action {
                     model.commit()
-                    presenter.startSimulation(model.item)
+                    presenter.startSimulation(model)
                 }
                 enableWhen(model.valid)
             }

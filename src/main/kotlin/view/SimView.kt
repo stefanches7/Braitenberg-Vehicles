@@ -11,7 +11,8 @@ import presenter.UpdateRenderEvent
 import tornadofx.*
 import kotlin.system.exitProcess
 
-class SimView(val presenter: SimPresenter, worldWidth: Double, worldHeight: Double) : View() {
+class SimView : View() {
+    val presenter: SimPresenter by inject()
     val canvas: AnchorPane
 
     override val root = vbox {
@@ -25,15 +26,18 @@ class SimView(val presenter: SimPresenter, worldWidth: Double, worldHeight: Doub
 
     init {
         canvas = root.children.filtered { it is AnchorPane }[0] as AnchorPane
-        with(canvas) {
-            //world boundaries
-            this += Line(worldWidth, 0.0, worldWidth, worldHeight)
-            this += Line(0.0, worldHeight, worldWidth, worldHeight)
-        }
         subscribe<UpdateRenderEvent> {
             if (!canvas.getChildList()!!.any { it is WorldObjectGroup }) renderWorldObjects(presenter.getCurrentWorldObjects())
             renderVehicles(presenter.getCurrentVehicles())
             presenter.renderReady()
+        }
+    }
+
+    fun drawWorldBoundaries(worldWidth: Double, worldHeight: Double) {
+        with(canvas) {
+            //world boundaries
+            this += Line(worldWidth, 0.0, worldWidth, worldHeight)
+            this += Line(0.0, worldHeight, worldWidth, worldHeight)
         }
     }
 
@@ -72,7 +76,6 @@ class SimView(val presenter: SimPresenter, worldWidth: Double, worldHeight: Doub
     }
 
     fun renderWorldObjects(wobjs: MutableCollection<WorldObject>) = wobjs.forEach {
-        //TODO
         with(canvas) {
             this += it.shape
         }

@@ -1,7 +1,7 @@
 package presenter
 
 import agent.Vehicle
-import config.SimConfig
+import config.SimConfigItem
 import javafx.animation.Timeline
 import javafx.event.EventHandler
 import model.SimModel
@@ -12,8 +12,8 @@ import view.WelcomeScreen
 import kotlin.math.ceil
 
 class SimPresenter() : Controller() {
-    lateinit var conf: SimConfig
-    lateinit var view: SimView
+    lateinit var conf: SimConfigItem
+    var view = find(SimView::class)
     lateinit var model: SimModel
     val configView: WelcomeScreen by inject()
     var running = true
@@ -33,29 +33,29 @@ class SimPresenter() : Controller() {
     /**
      * Create world, starting vehicles & launch the rendering process.
      */
-    fun startSimulation(conf: SimConfig) {
+    fun startSimulation(conf: SimConfigItem) {
         this.conf = conf
-        interval = ceil(1000F / conf.fps).toInt()
+        interval = ceil(1000F / conf.fps.value.toDouble()).toInt()
         model =
             SimModel.Factory.instance(
-                conf.worldWidth.toDouble(),
-                conf.worldLength.toDouble(),
-                effectMin = conf.minObjectEffect.toDouble(),
-                effectMax = conf.maxObjectEffect.toDouble(),
-                worldObjectCount = conf.objectCount.toInt(),
-                startingVehicles = conf.startingAgents.toInt(),
-                vehicleLength = conf.vehicleLength.toDouble(),
-                vehicleHeight = conf.vehicleWidth.toDouble(),
-                sensorsDistance = conf.sensorsDistance.toDouble(),
-                brainSize = conf.brainSize.toInt(),
-                rateLuckySelected = conf.rateLuckySelected.toDouble(),
-                rateEliteSelected = conf.rateEliteSelected.toDouble(),
-                matingRate = conf.matingRate.toDouble(),
-                mutationRate = conf.mutationRate.toDouble(),
+                conf.worldWidth.value.toDouble(),
+                conf.worldHeight.value.toDouble(),
+                effectMin = conf.minObjectEffect.value.toDouble(),
+                effectMax = conf.maxObjectEffect.value.toDouble(),
+                worldObjectCount = conf.objectCount.value.toInt(),
+                startingVehicles = conf.startingAgents.value.toInt(),
+                vehicleLength = conf.vehicleLength.value.toDouble(),
+                vehicleHeight = conf.vehicleWidth.value.toDouble(),
+                sensorsDistance = conf.sensorsDistance.value.toDouble(),
+                brainSize = conf.brainSize.value.toInt(),
+                rateLuckySelected = conf.rateLuckySelected.value.toDouble(),
+                rateEliteSelected = conf.rateEliteSelected.value.toDouble(),
+                matingRate = conf.matingRate.value.toDouble(),
+                mutationRate = conf.mutationRate.value.toDouble(),
                 presenter = this
             )
-        view = SimView(this, conf.worldWidth.toDouble(), conf.worldLength.toDouble())
         configView.replaceWith(SimView::class)
+        view.drawWorldBoundaries(conf.worldWidth.value.toDouble(), conf.worldHeight.value.toDouble())
         fire(UpdateRenderEvent()) //tells view to render model
     }
 

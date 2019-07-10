@@ -20,6 +20,5 @@ class NetworkTest {
 
     @test
     fun `run code`() { //DEBUG
-        println(UByte.MIN_VALUE)
     }
 }

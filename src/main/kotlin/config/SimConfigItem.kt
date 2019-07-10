@@ -37,8 +37,8 @@ class SimConfigItem : ItemViewModel<SimConfig>(SimConfig()) {
     private val KEY_BRAINSIZE = "brainSize"
     val KEY_DEFAULT_FPS = "defaultFPS"
     val KEY_DEFAULT_STARTINGVEHICLES = "defaultStartingVehicles"
-    val KEY_WORLDLENGTH = "worldLength"
-    val KEY_WORLDWIDTH = "worldWidth"
+    val KEY_WORLDHEIGHT = "worldLength"
+    val KEY_WORLDWIDTH = "worldHeight"
     val KEY_OBJCOUNT = "objCount"
     val KEY_OBJSIZE = "objSize"
     val KEY_MINEFFECT = "minEffect"
@@ -65,9 +65,9 @@ class SimConfigItem : ItemViewModel<SimConfig>(SimConfig()) {
         )
     }
 
-    val worldlength =
-        bind { SimpleDoubleProperty(item?.worldLength, "", config.string(KEY_WORLDLENGTH, "800.0").toDouble()) }
-    val worldwidth =
+    val worldHeight =
+        bind { SimpleDoubleProperty(item?.worldLength, "", config.string(KEY_WORLDHEIGHT, "800.0").toDouble()) }
+    val worldWidth =
         bind { SimpleDoubleProperty(item?.worldWidth, "", config.string(KEY_WORLDWIDTH, "800.0").toDouble()) }
     val objectCount = bind { SimpleIntegerProperty(item?.objectCount, "", config.string(KEY_OBJCOUNT, "10").toInt()) }
     val objectSize = bind {
@@ -77,11 +77,11 @@ class SimConfigItem : ItemViewModel<SimConfig>(SimConfig()) {
             config.string(KEY_WORLDWIDTH, "10.0").toDouble()
         )
     }
-    val minimumObjectEffect = bind {
+    val minObjectEffect = bind {
         SimpleDoubleProperty(item?.minObjectEffect, "", config.string(KEY_MINEFFECT, "10.0").toDouble())
     }
-    val maximumObjectEffect =
-        bind { SimpleDoubleProperty(item?.maxObjectEffect, "", config.string(KEY_MAXEFFECT, "10.0").toDouble()) }
+    val maxObjectEffect =
+        bind { SimpleDoubleProperty(item?.maxObjectEffect, "", config.string(KEY_MAXEFFECT, "50.0").toDouble()) }
     val vehicleWidth =
         bind { SimpleDoubleProperty(item?.vehicleWidth, "", config.string(KEY_VEHWIDTH, "20.0").toDouble()) }
     val vehicleLength =
@@ -110,15 +110,15 @@ class SimConfigItem : ItemViewModel<SimConfig>(SimConfig()) {
                 set(KEY_LUCKY_RATE to rateLuckySelected.value)
                 set(KEY_MATING_RATE to matingRate.value)
                 set(KEY_MUTRATE to mutationRate.value)
-                set(KEY_MINEFFECT to minimumObjectEffect.value)
-                set(KEY_MAXEFFECT to maximumObjectEffect.value)
+                set(KEY_MINEFFECT to minObjectEffect.value)
+                set(KEY_MAXEFFECT to maxObjectEffect.value)
                 set(KEY_OBJCOUNT to objectCount.value)
                 set(KEY_OBJSIZE to objectSize.value)
                 set(KEY_SENSDIST to sensorsDistance.value)
                 set(KEY_VEHLENGTH to vehicleLength.value)
                 set(KEY_VEHWIDTH to vehicleWidth.value)
-                set(KEY_WORLDLENGTH to worldlength.value)
-                set(KEY_WORLDWIDTH to worldwidth.value)
+                set(KEY_WORLDHEIGHT to worldHeight.value)
+                set(KEY_WORLDWIDTH to worldWidth.value)
                 save()
             }
         }
@@ -129,8 +129,8 @@ class SimConfigItem : ItemViewModel<SimConfig>(SimConfig()) {
         this.item.brainSize = brainSize.value.toInt()
         this.item.fps = fps.value.toInt()
         this.item.matingRate = matingRate.value.toDouble()
-        this.item.maxObjectEffect = maximumObjectEffect.value.toDouble()
-        this.item.minObjectEffect = minimumObjectEffect.value.toDouble()
+        this.item.maxObjectEffect = maxObjectEffect.value.toDouble()
+        this.item.minObjectEffect = minObjectEffect.value.toDouble()
         this.item.mutationRate = mutationRate.value.toDouble()
         this.item.objectCount = objectCount.value.toInt()
         this.item.rateEliteSelected = rateEliteSelected.value.toDouble()
@@ -139,7 +139,7 @@ class SimConfigItem : ItemViewModel<SimConfig>(SimConfig()) {
         this.item.vehicleLength = vehicleLength.value.toDouble()
         this.item.startingAgents = startingAgents.value.toInt()
         this.item.vehicleWidth = vehicleWidth.value.toDouble()
-        this.item.worldLength = worldwidth.value.toDouble()
-        this.item.worldLength = worldlength.value.toDouble()
+        this.item.worldLength = worldWidth.value.toDouble()
+        this.item.worldLength = worldHeight.value.toDouble()
     }
 }

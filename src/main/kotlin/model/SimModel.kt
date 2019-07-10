@@ -3,7 +3,6 @@ package model
 import DoubleVector
 import agent.Vehicle
 import agent.brain.Network
-import mean
 import org.nield.kotlinstatistics.WeightedCoin
 import presenter.SimPresenter
 import kotlin.random.Random
@@ -71,9 +70,9 @@ class SimModel(
             worldHeight = worldHeight,
             worldWidth = worldWidth,
             brain = Network.fromBinary(childBrain),
-            sensorsDistance = presenter.conf.sensorsDistance.toDouble(),
-            vehicleHeight = presenter.conf.vehicleWidth.toDouble(),
-            vehicleLength = presenter.conf.vehicleLength.toDouble()
+            sensorsDistance = presenter.conf.sensorsDistance.value.toDouble(),
+            vehicleHeight = presenter.conf.vehicleWidth.value.toDouble(),
+            vehicleLength = presenter.conf.vehicleLength.value.toDouble()
         )
     }
 
@@ -92,7 +91,7 @@ class SimModel(
     private fun fitness(individuals: Collection<Vehicle>): HashMap<Vehicle, Double> {
         val out = hashMapOf<Vehicle, Double>()
         individuals.forEach {
-            out.put(it, mean(it.speed.vecLength(), it.oldSpeed.vecLength()))
+            out.put(it, it.speed.vecLength() + it.oldSpeed.vecLength())
         }
         return out
     }
