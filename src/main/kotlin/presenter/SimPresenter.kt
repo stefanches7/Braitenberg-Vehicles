@@ -3,6 +3,7 @@ package presenter
 import agent.Vehicle
 import config.SimConfigItem
 import data.SimInfo
+import data.VehicleInfo
 import javafx.animation.Timeline
 import javafx.event.EventHandler
 import model.SimModel
@@ -122,7 +123,14 @@ class SimPresenter() : Controller() {
     fun openSimInfoFragment() {
         pause()
         val infos = SimInfo(this.model.vehicles.size)
-        val fragment = InfoFragment<SimInfo>(infos)
+        val fragment = InfoFragment(infos)
+        fragment.openModal(block = true)
+    }
+
+    fun showVehicleInformation(vehicle: Vehicle) {
+        pause()
+        val infos = VehicleInfo(vehicle)
+        val fragment = InfoFragment(infos)
         fragment.openModal(block = true)
     }
 }
