@@ -2,13 +2,13 @@ package presenter
 
 import agent.Vehicle
 import config.SimConfigItem
+import data.SimInfo
 import javafx.animation.Timeline
 import javafx.event.EventHandler
 import model.SimModel
 import model.WorldObject
 import tornadofx.*
-import view.SimView
-import view.WelcomeScreen
+import view.*
 import kotlin.math.ceil
 
 class SimPresenter() : Controller() {
@@ -63,17 +63,16 @@ class SimPresenter() : Controller() {
      * Updates render frame
      */
     fun updateRender() {
-        if (running) {
-            val timeline = thisTickAnimation()
-            timeline.onFinished = EventHandler {
-                if (gaUpdateQueued) {
-                    model.nextEpoch()
-                    gaUpdateQueued = false
-                    fire(UpdateRenderEvent())
-                } else renderReady()
-            }
-            timeline.play()
+        val timeline = thisTickAnimation()
+        timeline.onFinished = EventHandler {
+            if (gaUpdateQueued) {
+                model.nextEpoch()
+                gaUpdateQueued = false
+                fire(UpdateRenderEvent()) //update GUI with new vehicles
+            } else fire(RenderReadyEvent())
         }
+        timeline.play()
+
     }
 
     fun thisTickAnimation(): Timeline {
@@ -118,5 +117,12 @@ class SimPresenter() : Controller() {
     fun renderReady() {
         paused = false
         fire(RenderReadyEvent())
+    }
+
+    fun openSimInfoFragment() {
+        pause()
+        val infos = SimInfo(this.model.vehicles.size)
+        val fragment = InfoFragment<SimInfo>(infos)
+        fragment.openModal(block = true)
     }
 }

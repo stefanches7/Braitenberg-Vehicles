@@ -14,7 +14,7 @@ class WelcomeScreen : View("Welcome to the GA Braitenberg vehicles simulation!")
     val presenter: SimPresenter by inject()
 
     override val root = scrollpane {
-        label("Welcome to tHe simulation! Choose starting parameters:")
+        label("Welcome! Please, specify starting parameters:")
         form {
             hbox {
                 fieldset("General settings") {
