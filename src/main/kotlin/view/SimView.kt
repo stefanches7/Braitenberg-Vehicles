@@ -1,5 +1,6 @@
 package view
 
+import EpochInfoConverter
 import Styles
 import agent.Vehicle
 import javafx.scene.control.Button
@@ -19,7 +20,9 @@ class SimView : View() {
     val canvas: AnchorPane
 
     override val root = vbox {
-        anchorpane {}
+        anchorpane {
+            label(presenter.epochCountProperty(), converter = EpochInfoConverter())
+        }
         keyboard {
             addEventFilter(KeyEvent.KEY_PRESSED) { e ->
                 processInput(e.code)

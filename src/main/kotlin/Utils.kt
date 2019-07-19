@@ -1,4 +1,5 @@
 import javafx.geometry.Bounds
+import javafx.util.StringConverter
 import tornadofx.*
 import view.InfoFragment
 import java.io.File
@@ -276,4 +277,15 @@ fun path(vararg pathSlices: String): String {
 fun <R, S : InfoFragment<R>> openFragment(fragmentClass: KClass<S>, infos: R) {
     val fragment = find(fragmentClass)
     fragment.openModal(block = true)
+}
+
+class EpochInfoConverter : StringConverter<Int>() {
+    override fun toString(`object`: Int?): String {
+        return "Epoch count: $`object`"
+    }
+
+    override fun fromString(string: String?): Int {
+        return string!!.replace("[^\\d]", "").toInt()
+    }
+
 }

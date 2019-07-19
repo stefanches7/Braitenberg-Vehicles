@@ -33,8 +33,12 @@ class InfoFragment<T>(infos: T, title: String? = "", icon: Node? = null) : Fragm
 
     fun renderSimInfo(infos: SimInfo) {
         with(root) {
-            this += label(infos.toString())
+            this += label(infos.vehiclesCount.toString())
         }
+
+    }
+
+    fun vehicleSpeedDistrChart() {
     }
 
     override fun onUndock() {

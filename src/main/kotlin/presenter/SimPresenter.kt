@@ -14,8 +14,11 @@ import kotlin.math.ceil
 
 class SimPresenter() : Controller() {
     lateinit var conf: SimConfigItem
-    var view = find(SimView::class)
+    lateinit var view: SimView
     lateinit var model: SimModel
+
+    fun epochCountProperty() = model.epochCountProperty()
+
     val configView: WelcomeScreen by inject()
     var running = true
     var paused = false
@@ -55,6 +58,7 @@ class SimPresenter() : Controller() {
                 mutationRate = conf.mutationRate.value.toDouble(),
                 presenter = this
             )
+        view = find(view.SimView::class)
         configView.replaceWith(SimView::class)
         view.drawWorldBoundaries(conf.worldWidth.value.toDouble(), conf.worldHeight.value.toDouble())
         fire(UpdateRenderEvent()) //tells view to render model
@@ -122,7 +126,7 @@ class SimPresenter() : Controller() {
 
     fun openSimInfoFragment() {
         pause()
-        val infos = SimInfo(this.model.vehicles.size)
+        val infos = SimInfo(this.model.vehicles.size, this.model.vehicles.map {it.speed})
         val fragment = InfoFragment(infos)
         fragment.openModal(block = true)
     }
@@ -133,4 +137,5 @@ class SimPresenter() : Controller() {
         val fragment = InfoFragment(infos)
         fragment.openModal(block = true)
     }
+
 }
