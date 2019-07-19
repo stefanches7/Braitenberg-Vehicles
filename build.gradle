@@ -40,7 +40,7 @@ dependencies {
     implementation "org.jetbrains.kotlin:kotlin-reflect:$kotlinVersion"
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlinVersion"
 
-    compile 'org.knowm.xchart:xchart-parent:3.5.4'
+    compile group: 'org.knowm.xchart', name: 'xchart', version: '3.5.2'
     compile 'no.tornado:tornadofx:1.7.17'
     compile 'org.nield:kotlin-statistics:1.2.1'
 
