@@ -10,6 +10,8 @@ import tornadofx.*
 import org.knowm.xchart.style.Styler
 import java.util.*
 import javax.swing.JComponent
+import kotlin.math.max
+import kotlin.math.min
 
 
 /**
@@ -52,7 +54,8 @@ class InfoFragment<T>(infos: T, title: String? = "", icon: Node? = null) : Fragm
             .xAxisTitle("Score")
             .yAxisTitle("Number")
             .theme(Styler.ChartTheme.GGPlot2).build()
-        val hist = Histogram(infos.vehicleSpeeds.map { it.x }, 40, -10.0, 10.0)
+        val speedXs = infos.vehicleSpeeds.map { it.x }
+        val hist = Histogram(speedXs, 20, speedXs.min()?:0.0, speedXs.max()?:0.0)
         chart.addSeries("vehicle speeds", hist.getxAxisData(), hist.getyAxisData())
         return XChartPanel(chart)
     }
