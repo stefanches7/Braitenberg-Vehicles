@@ -41,6 +41,7 @@ dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlinVersion"
 
     compile group: 'org.knowm.xchart', name: 'xchart', version: '3.5.2'
+    compile 'com.opencsv:opencsv:4.6'
     compile 'no.tornado:tornadofx:1.7.17'
     compile 'org.nield:kotlin-statistics:1.2.1'
 
