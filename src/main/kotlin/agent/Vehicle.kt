@@ -21,21 +21,23 @@ import view.VehicleGroup
 import kotlin.math.abs
 import kotlin.random.Random
 
+@ExperimentalUnsignedTypes
 class Vehicle(
-    val body: Body,
-    val motors: Array<Motor>,
-    val sensors: Array<Sensor>,
+    private val body: Body,
+    private val motors: Array<Motor>,
+    private val sensors: Array<Sensor>,
     var speed: DoubleVector,
     var brain: Network
 ) {
-    val presenter = find(SimPresenter::class)
+    private val presenter = find(SimPresenter::class)
+    private val model: SimModel by SimModel
     val id = alphaNumericId(10)
 
     val render = initRender()
 
     fun initRender(): VehicleGroup {
         val out = VehicleGroup(sensors.map { it.shape } + motors.map { it.shape } + listOf<Node>(body.shape))
-        out.onMouseClicked = EventHandler { _ -> this.showVehicleInformation() }
+        out.onMouseClicked = EventHandler { this.showVehicleInformation() }
         return out
     }
 
@@ -43,7 +45,6 @@ class Vehicle(
         presenter.showVehicleInformation(this)
     }
 
-    val model: SimModel by SimModel
     var oldSpeed: DoubleVector = DoubleVector(0.0, 0.0) //used for rotation computation
 
     fun getAngle() = angleToXAxis(Dot(this.speed.x, this.speed.y))
@@ -76,11 +77,13 @@ class Vehicle(
         if (fromLeft == 0.0 || fromUp == 0.0) return speed//just initialized
         val (fromRight, fromDown) = arrayOf(abs(model.worldEnd.x - fromLeft), abs(model.worldEnd.y - fromUp))
         // truncate speed vectors to out of bounds
-        val out = adjustSpeedInLimits(speed, arrayOf(fromLeft, fromUp, fromRight, fromDown))
+        //val out = adjustSpeedInLimits(speed, arrayOf(fromLeft, fromUp, fromRight, fromDown))
+        if (this.getX() + speed.x > model.worldEnd.x && speed.x > 0) speed.x = -speed.x
+        if (this.getY() + speed.y > model.worldEnd.y && speed.y > 0) speed.y = -speed.y
         val c = 100.0
         val adjustedSpeed = DoubleVector(
-            out.x + repulseFun(fromLeft, c) - repulseFun(fromRight, c),
-            out.y + repulseFun(fromUp, c) - repulseFun(fromDown, c)
+            speed.x //+ repulseFun(fromLeft, c) - repulseFun(fromRight, c)
+            , speed.y //+ repulseFun(fromUp, c) - repulseFun(fromDown, c)
         )
         return adjustedSpeed
     }
