@@ -47,9 +47,12 @@ class Vehicle(
 
     var oldSpeed: DoubleVector = DoubleVector(0.0, 0.0) //used for rotation computation
 
-    fun getAngle() = angleToXAxis(Dot(this.speed.x, this.speed.y))
-    fun getX() = this.body.shape.layoutX
-    fun getY() = this.body.shape.layoutY
+    private fun getAngle() = angleToXAxis(Dot(this.speed.x, this.speed.y))
+    private fun getLayoutX() = this.body.shape.layoutX
+    private fun getLayoutY() = this.body.shape.layoutY
+    private fun getX() = (this.body.shape as Rectangle).x + this.getLayoutX()
+    private fun getY() = (this.body.shape as Rectangle).y + this.getLayoutY()
+
 
 
     /**
@@ -77,13 +80,15 @@ class Vehicle(
         if (fromLeft == 0.0 || fromUp == 0.0) return speed//just initialized
         val (fromRight, fromDown) = arrayOf(abs(model.worldEnd.x - fromLeft), abs(model.worldEnd.y - fromUp))
         // truncate speed vectors to out of bounds
-        //val out = adjustSpeedInLimits(speed, arrayOf(fromLeft, fromUp, fromRight, fromDown))
-        if (this.getX() + speed.x > model.worldEnd.x && speed.x > 0) speed.x = -speed.x
-        if (this.getY() + speed.y > model.worldEnd.y && speed.y > 0) speed.y = -speed.y
+        val out = adjustSpeedInLimits(speed, arrayOf(fromLeft, fromUp, fromRight, fromDown))
+//        if ((this.body.shape as Rectangle).x + this.getLayoutX() > model.worldEnd.x && speed.x > 0) {
+//            speed.x = -speed.x
+//        }
+//        if ((this.body.shape as Rectangle).y > model.worldEnd.y && speed.y > 0) speed.y = -speed.y
         val c = 100.0
         val adjustedSpeed = DoubleVector(
-            speed.x //+ repulseFun(fromLeft, c) - repulseFun(fromRight, c)
-            , speed.y //+ repulseFun(fromUp, c) - repulseFun(fromDown, c)
+            speed.x + repulseFun(fromLeft, c) - repulseFun(fromRight, c)
+            , speed.y + repulseFun(fromUp, c) - repulseFun(fromDown, c)
         )
         return adjustedSpeed
     }
@@ -139,8 +144,8 @@ class Vehicle(
 
     private fun moveBody(): Collection<KeyValue> {
         val out: MutableSet<KeyValue> = mutableSetOf()
-        out.add(KeyValue(body.shape.layoutXProperty(), this.getX() + this.speed.x))
-        out.add(KeyValue(body.shape.layoutYProperty(), this.getY() + this.speed.y))
+        out.add(KeyValue(body.shape.layoutXProperty(), this.getLayoutX() + this.speed.x))
+        out.add(KeyValue(body.shape.layoutYProperty(), this.getLayoutY() + this.speed.y))
         return out
     }
 
@@ -237,8 +242,9 @@ class Vehicle(
             brain: Network? = null
         ): Vehicle {
             return Vehicle.Factory.simpleVehicle(
-                Random.nextDouble(0.0, worldWidth),
-                Random.nextDouble(0.0, worldHeight),
+                // DEBUG OVERRIDE
+                Random.nextDouble(100.0, worldWidth - 100.0),
+                Random.nextDouble(100.0, worldHeight - 100.0),
                 vehicleHeight, vehicleLength, 1.0, sensorsDistance,
                 Random.nextDouble(-10.0, 10.0),
                 Random.nextDouble(-10.0, 10.0),
