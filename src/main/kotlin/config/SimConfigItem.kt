@@ -5,6 +5,10 @@ import javafx.beans.property.SimpleDoubleProperty
 import javafx.beans.property.SimpleIntegerProperty
 import tornadofx.*
 
+
+/**
+ * Configuration model.
+ */
 data class SimConfig(
     var startingAgents: Int = 0, var fps: Int = 0,
     var rateLuckySelected: Double = 0.0,
