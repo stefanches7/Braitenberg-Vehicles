@@ -21,6 +21,7 @@ object DataExporter {
             if (!success) throw Exception()
         }
         val fh = File(csvPath, "model.csv")
+        if (!fh.exists()) fh.createNewFile()
         val lines = fh.readLines()
         val append = lines.isEmpty() || lines[lines.size - 1].startsWith("${model.tick - 1}")
         val simInfoWriter = CSVWriter(FileWriter(fh, append),

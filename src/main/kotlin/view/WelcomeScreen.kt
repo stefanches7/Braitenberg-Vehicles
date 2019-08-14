@@ -198,7 +198,7 @@ class WelcomeScreen : View("Welcome to the GA Braitenberg vehicles simulation!")
                     button("Choose directory..."){
                         action{
                             val dir = chooseDirectory("Select a directory")
-                            if (dir != null) model.dataTraceDir.set(dir.getPath())
+                            if (dir != null) model.dataTraceDir.value = dir.getPath()
                         }
                     }
                 }
