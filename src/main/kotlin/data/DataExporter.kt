@@ -20,11 +20,16 @@ object DataExporter {
             val success = File(csvPath).mkdirs()
             if (!success) throw Exception()
         }
-        val simInfoWriter = CSVWriter(FileWriter(File(csvPath, "model.csv"), true),
+        val fh = File(csvPath, "model.csv")
+        val lines = fh.readLines()
+        val append = lines.isEmpty() || lines[lines.size - 1].startsWith("${model.tick - 1}")
+        val simInfoWriter = CSVWriter(FileWriter(fh, append),
                 CSVWriter.DEFAULT_SEPARATOR,
                 CSVWriter.NO_QUOTE_CHARACTER,
                 CSVWriter.DEFAULT_ESCAPE_CHARACTER,
                 CSVWriter.DEFAULT_LINE_END)
+        if (fh.length() == 0L) simInfoWriter.writeNext(arrayOf("Tick #", "Vehicles", "Epoch #"))
         simInfoWriter.writeNext(arrayOf(model.tick.toString(), model.vehicles.size.toString(), model.epochCount.toString()))
+        simInfoWriter.close()
     }
 }

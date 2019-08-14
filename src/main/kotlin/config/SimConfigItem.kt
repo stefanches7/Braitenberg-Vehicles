@@ -3,6 +3,7 @@ package config
 import javafx.beans.property.SimpleBooleanProperty
 import javafx.beans.property.SimpleDoubleProperty
 import javafx.beans.property.SimpleIntegerProperty
+import javafx.beans.property.SimpleStringProperty
 import tornadofx.*
 
 
@@ -29,7 +30,8 @@ data class SimConfig(
     var vehicleWidth: Double = 0.0,
 
     var sensorsDistance: Double = 0.0,
-    var remember: Boolean = false
+    var remember: Boolean = false,
+    var dataTraceDir: String = ""
 )
 
 
@@ -50,6 +52,7 @@ class SimConfigItem : ItemViewModel<SimConfig>(SimConfig()) {
     val KEY_VEHWIDTH = "vehWidth"
     val KEY_VEHLENGTH = "vehLength"
     val KEY_SENSDIST = "sensorsDistance"
+    val KEY_DATATRACEDIR = "dataTraceDir"
 
     val KEY_REMEMBER = "rememberDefaultSettings"
 
@@ -103,6 +106,7 @@ class SimConfigItem : ItemViewModel<SimConfig>(SimConfig()) {
     val rateLuckySelected =
         bind { SimpleDoubleProperty(item?.rateLuckySelected, "", config.string(KEY_LUCKY_RATE, "0.05").toDouble()) }
     val remember = bind { SimpleBooleanProperty(item.remember, "", false) }
+    val dataTraceDir = bind { SimpleStringProperty(item.dataTraceDir, "", "datatrace") }
 
     override fun onCommit() {
         if (remember.value) {
