@@ -324,3 +324,5 @@ fun alphaNumericId(outputStrLength: Int): String {
         .joinToString("")
 }
 
+const val FITNESS_TICKS_MEMORY_LEN = 3
+

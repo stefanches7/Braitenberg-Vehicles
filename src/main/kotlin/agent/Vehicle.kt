@@ -2,6 +2,7 @@ package agent
 
 import Dot
 import DoubleVector
+import FITNESS_TICKS_MEMORY_LEN
 import agent.brain.Network
 import angleToXAxis
 import check
@@ -47,15 +48,15 @@ class Vehicle(
     }
 
     var speed: DoubleVector = speed
-        get() = speedArchive[0]
+        get() = speedsArchive[0]
 
     var speedLastTurn: DoubleVector = DoubleVector(0.0, 0.0)
-        get() = speedArchive[1]
+        get() = speedsArchive[1]
 
-    private var speedArchive = LinkedList<DoubleVector>()
+    private var speedsArchive = LinkedList<DoubleVector>()
 
     init{
-        speedArchive.addFirst(speed)
+        speedsArchive.addFirst(speed)
     }
 
     private fun getAngle() = angleToXAxis(Dot(this.speed.x, this.speed.y))
@@ -69,10 +70,10 @@ class Vehicle(
      * Changes velocity and dAngle of current vehicle, based on sensors affected by objects in the world.
      */
     fun updateSpeedsArchive(affectors: Collection<WorldObject>) {
-        if (this.speedArchive.size >= 5) { //deque filled, make space on the end
-            this.speedArchive.removeLast()
+        if (this.speedsArchive.size >= FITNESS_TICKS_MEMORY_LEN) { //deque filled, make space on the end
+            this.speedsArchive.removeLast()
         }
-        this.speedArchive.addFirst(this.perceptEffects(affectors))
+        this.speedsArchive.addFirst(this.perceptEffects(affectors))
     }
 
 
@@ -125,8 +126,17 @@ class Vehicle(
     fun fitness(): Double {
         //Area under speeds archive polygon
         // TODO correct calculation for self-intersecting polygons
-        val xCoords = this.speedArchive.map { it.x }
-        val yCoords = this.speedArchive.map { it.y }
+        var xCoords = mutableListOf<Double>()
+        var yCoords = mutableListOf<Double>()
+        var interXsum = 0.0
+        var interYsum = 0.0
+        val sa = this.speedsArchive
+        for (i in 0 until sa.size) {
+            interXsum += sa[i].x
+            xCoords.add(interXsum)
+            interYsum += sa[i].y
+            yCoords.add(interYsum)
+        }
         var areaUnderPolygon = 0.0
         for (i in 0 until xCoords.size - 1) {
             areaUnderPolygon += xCoords[i]*yCoords[i+1] - xCoords[i + 1]*yCoords[i]
