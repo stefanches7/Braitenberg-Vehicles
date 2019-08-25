@@ -16,6 +16,7 @@ import model.SimModel
 import model.WorldObject
 import presenter.SimPresenter
 import alphaNumericId
+import javafx.animation.Interpolator
 import sum
 import tornadofx.*
 import view.VehicleGroup
@@ -68,56 +69,55 @@ class Vehicle(
 
     /**
      * Changes velocity and dAngle of current vehicle, based on sensors affected by objects in the world.
+     * Return value is whether transgression of walls occurs in this tick.
      */
-    fun updateSpeedsArchive(affectors: Collection<WorldObject>) {
+    private fun updateSpeedsArchive(affectors: Collection<WorldObject>):Boolean {
         if (this.speedsArchive.size >= FITNESS_TICKS_MEMORY_LEN) { //deque filled, make space on the end
             this.speedsArchive.removeLast()
         }
-        this.speedsArchive.addFirst(this.perceptEffects(affectors))
+        val (newSpeed, transgressesWalls) = this.perceptEffects(affectors)
+        this.speedsArchive.addFirst(newSpeed)
+        return transgressesWalls
     }
 
 
-    private fun perceptEffects(affectors: Collection<WorldObject>): DoubleVector {
+    private fun perceptEffects(affectors: Collection<WorldObject>): Pair<DoubleVector, Boolean> {
         val sensorInput = this.sensors.map { it.percept(affectors) }
         val motorOutput = this.brain.propagate(sensorInput.toTypedArray())
         val pureSpeed = motorOutput.sum()
-        val adjustedSpeed = repulseFromWalls(pureSpeed)
-        return adjustedSpeed
+        val (adjustedSpeed,transgress) = transgressWalls(pureSpeed)
+        return Pair(adjustedSpeed, transgress)
     }
 
     /**
-     * Repulses vehicle off the wall, when it is close
+     * Returns speed of vehicle to "portal" through a wall to the opposite site, and whether such portalling has occurred
      */
-    private fun repulseFromWalls(speed: DoubleVector): DoubleVector {
+    private fun transgressWalls(speed: DoubleVector): Pair<DoubleVector, Boolean> {
         val (fromLeft, fromUp) = arrayOf(abs(this.getX()), abs(this.getY()))
-        if (fromLeft == 0.0 || fromUp == 0.0) return speed//just initialized
+        if (fromLeft == 0.0 || fromUp == 0.0) return Pair(speed,false) //just initialized
         val (fromRight, fromDown) = arrayOf(abs(model.worldEnd.x - fromLeft), abs(model.worldEnd.y - fromUp))
-        // truncate speed vectors to out of bounds
-        val out = adjustSpeedInLimits(speed, arrayOf(fromLeft, fromUp, fromRight, fromDown))
-        val c = 100.0
-        val adjustedSpeed = DoubleVector(
-            out.x + repulseFun(fromLeft, c) - repulseFun(fromRight, c)
-            , out.y + repulseFun(fromUp, c) - repulseFun(fromDown, c)
-        )
-        return adjustedSpeed
-    }
+        var transgress = false
+        val out = speed.copy()
+        if (fromLeft + speed.x > model.worldEnd.x) {
+            val Xspeedleftover = speed.x - fromRight
+            out.x = -fromLeft + Xspeedleftover
+            transgress = true
+        } else if (fromLeft + speed.x < 0) { //speedx is negative!
+            val Yspeedleftover = fromLeft + speed.x
+            out.x = fromRight + Yspeedleftover
+            transgress = true
+        }
+        if (fromUp + speed.y > model.worldEnd.y) {
+            val Xspeedleftover = speed.y - fromDown
+            out.y = -fromUp + Xspeedleftover
+            transgress = true
+        } else if (fromUp + speed.y < 0) { //speedy is negative!
+            val Yspeedleftover = fromUp + speed.y
+            out.y = fromDown + Yspeedleftover
+            transgress = true
 
-    private fun adjustSpeedInLimits(speed: DoubleVector, distances: Array<Double>): DoubleVector {
-        val out = speed
-        val (fromLeft, fromUp, fromRight, fromDown) = distances
-        if (fromLeft + speed.x > model.worldEnd.x) out.x = (model.worldEnd.x - fromLeft) * 0.9
-        else if (fromRight + speed.x < 0) out.x = (fromRight - 0) * 0.9
-        if (fromUp + speed.y > model.worldEnd.y) out.y = (model.worldEnd.y - fromUp) * 0.9
-        else if (fromDown + speed.y < 0) out.x = (fromDown - 0) * 0.9
-        return out
-    }
-
-    /**
-     * c is "repulse closer than points" parameter
-     */
-    fun repulseFun(distance: Double, c: Double): Double {
-        if (abs(distance) > c) return 0.0
-        else return abs(1 / abs(distance / c))
+        }
+        return Pair(out, transgress)
     }
 
     /**
@@ -126,8 +126,8 @@ class Vehicle(
     fun fitness(): Double {
         //Area under speeds archive polygon
         // TODO correct calculation for self-intersecting polygons
-        var xCoords = mutableListOf<Double>()
-        var yCoords = mutableListOf<Double>()
+        val xCoords = mutableListOf<Double>()
+        val yCoords = mutableListOf<Double>()
         var interXsum = 0.0
         var interYsum = 0.0
         val sa = this.speedsArchive
@@ -162,32 +162,33 @@ class Vehicle(
      * Takes speed and dAngle now and calculates transformations for each body part
      */
     fun calcCurrentUpdate(affectors: MutableSet<WorldObject>): Set<KeyValue> {
-        this.updateSpeedsArchive(affectors)
-        val animation = animationChanges()
+        val transgress = this.updateSpeedsArchive(affectors)
+        val animation = animationChanges(transgress)
         return animation
     }
 
-    fun animationChanges(): Set<KeyValue> {
+    fun animationChanges(transgress: Boolean): Set<KeyValue> {
         val out: MutableSet<KeyValue> = mutableSetOf()
-        out.add(this.bodyRotation())
-        out.addAll(this.moveBodyParts())
-        out.addAll(this.moveBody())
+        val interpolator: Interpolator = if (transgress) Interpolator.DISCRETE else Interpolator.LINEAR
+        out.add(this.bodyRotation(interpolator))
+        out.addAll(this.moveBodyParts(interpolator))
+        out.addAll(this.moveBody(interpolator))
         return out
     }
 
-    private fun moveBody(): Collection<KeyValue> {
+    private fun moveBody(interpolator: Interpolator): Collection<KeyValue> {
         val out: MutableSet<KeyValue> = mutableSetOf()
-        out.add(KeyValue(body.shape.layoutXProperty(), this.getLayoutX() + this.speed.x))
-        out.add(KeyValue(body.shape.layoutYProperty(), this.getLayoutY() + this.speed.y))
+        out.add(KeyValue(body.shape.layoutXProperty(), this.getLayoutX() + this.speed.x, interpolator))
+        out.add(KeyValue(body.shape.layoutYProperty(), this.getLayoutY() + this.speed.y, interpolator))
         return out
     }
 
-    fun bodyRotation(): KeyValue {
+    fun bodyRotation(interpolator: Interpolator): KeyValue {
         val rotateAngle = this.rotationAngle()
-        return KeyValue(body.shape.rotateProperty(), body.shape.rotate + rotateAngle.degrees())
+        return KeyValue(body.shape.rotateProperty(), body.shape.rotate + rotateAngle.degrees(), interpolator)
     }
 
-    fun moveBodyParts(): Set<KeyValue> {
+    fun moveBodyParts(interpolator: Interpolator): Set<KeyValue> {
         val out: MutableSet<KeyValue> = mutableSetOf()
         val transform = { bp: BodyPart ->
             val oldBPOffset = bp.centerOffset.copy()
@@ -196,8 +197,8 @@ class Vehicle(
             // bp center offset is already angle updated
             val newX = bp.getX() - oldBPOffset.x + bp.centerOffset.x + this.speed.x
             val newY = bp.getY() - oldBPOffset.y + bp.centerOffset.y + this.speed.y
-            out.add(KeyValue(bp.getXProperty(), newX))
-            out.add(KeyValue(bp.getYProperty(), newY))
+            out.add(KeyValue(bp.getXProperty(), newX, interpolator))
+            out.add(KeyValue(bp.getYProperty(), newY, interpolator))
         }
         this.sensors.forEach {
             transform(it)

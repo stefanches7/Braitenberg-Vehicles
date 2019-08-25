@@ -15,7 +15,9 @@ plugins {
     id 'idea'
     id "org.jetbrains.kotlin.jvm" version "1.3.41"
     id 'application'
+    id 'org.jetbrains.dokka' version '0.9.18'
 }
+
 repositories {
     mavenCentral()
     jcenter()
@@ -28,12 +30,20 @@ targetCompatibility = 1.8
 archivesBaseName = 'Braitenberg-Vehicles'
 mainClassName = 'SimApp'
 
+sourceSets {
+    main.java.srcDirs += 'src/main/kotlin/'
+    test.java.srcDirs += 'src/test/kotlin/'
+}
+
 jar {
     manifest {
         attributes(
                 'Manifest-Version': 1.0,
-                'Main-Class': 'SimApp')
+                'Main-Class': 'SimAppKt')
     }
+    from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
+    baseName "BraGenBrain"
+    destinationDir = file("$rootDir")
 }
 
 dependencies {
@@ -58,4 +68,10 @@ compileTestKotlin {
     kotlinOptions {
         jvmTarget = "1.8"
     }
+}
+
+
+dokka {
+    outputFormat = 'html'
+    outputDirectory = "$rootDir/doc/code"
 }

@@ -142,10 +142,6 @@ fun Collection<DoubleVector>.sum(): DoubleVector {
     return out
 }
 
-fun center(bounds: Bounds): Dot {
-    return Dot((bounds.minX + bounds.maxX) / 2, (bounds.minY + bounds.maxY) / 2)
-}
-
 fun sum(vararg elements: Double): Double {
     var out = 0.0
     elements.forEach { out += it }
@@ -325,4 +321,5 @@ fun alphaNumericId(outputStrLength: Int): String {
 }
 
 const val FITNESS_TICKS_MEMORY_LEN = 3
+
 
