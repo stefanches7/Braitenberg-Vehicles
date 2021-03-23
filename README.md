@@ -5,7 +5,7 @@ The algorithm is based on Genetic Algorithms and hence runs epochs comprised of 
 
 
 ## Acknowledgements
-This project was started as GSoC '19 project: https://summerofcode.withgoogle.com/projects/#6182628703600640. At the final, I wrote a gist summarizing the project expierence during the GSoC: https://gist.github.com/stefanches7/88639248e8260784a7f7c3dfa1d2d6c2.
+This project was started as [GSoC '19 project](https://summerofcode.withgoogle.com/projects/#6182628703600640). At the final, I wrote a [gist](https://gist.github.com/stefanches7/88639248e8260784a7f7c3dfa1d2d6c2) summarizing the project expierence during the GSoC.
 I want to once again say thanks to Dr. Bradly Alicea for his outstanding mentorship and directions in the project, INCF and Google for supporting the project financially and ideally, as well as my fellow students Jesse Parent, Ziyi Gong, Ankit Gupta as a part of [Orthogonal Research and Education Lab](https://orthogonal-research.weebly.com/) existing purely online for informative meetings and literature exchange!
 
 
